@@ -36,3 +36,7 @@
 *.idb
 *.vcxproj
 *.filters
+*.log
+*.ilk
+*.tlog
+*.txt

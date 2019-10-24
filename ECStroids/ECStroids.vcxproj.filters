@@ -92,9 +92,6 @@
     <ClInclude Include="Sprite.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="Position.h">
-      <Filter>Components</Filter>
-    </ClInclude>
     <ClInclude Include="MouseListener.h">
       <Filter>Components</Filter>
     </ClInclude>
@@ -109,6 +106,9 @@
     </ClInclude>
     <ClInclude Include="Audio.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Components</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

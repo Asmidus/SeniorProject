@@ -1,5 +1,5 @@
 #pragma once
-#include "Position.h"
+#include "Transform.h"
 #include "TextureManager.h"
 
 class Sprite {
@@ -100,7 +100,7 @@ public:
 
 	bool animated = false;
 	bool scrolling = false;
-	bool rotated = false;
+	float angle = 0.0f;
 	int frames = 0;
 	double delay = 100;
 	SDL_Rect src, dest, scrollDest;

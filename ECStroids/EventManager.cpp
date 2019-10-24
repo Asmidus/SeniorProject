@@ -39,9 +39,9 @@ void EventManager::processCollision(Event event) {
 	auto collider = event.entities()[0];
 	for (int i = 1; i < event.entities().size(); i++) {
 		auto collided = event.entities()[i];
-		_registry->get<Position>(collided).y += 1;
+		_registry->get<Transform>(collided).pos.y += 1;
 	}
-	_registry->get<Position>(collider).x += 1;
+	_registry->get<Transform>(collider).pos.x += 1;
 	//}
 }
 
@@ -70,12 +70,12 @@ void EventManager::processMove(Event event) {
 			//direction.y -= 1;
 			break;
 		case Event::moveRight:
-			direction = glm::rotate<float>(direction, -0.1);
+			direction = glm::rotate<float>(direction, 0.05);
 			//direction.x += 1;
 			break;
 		case Event::moveLeft:
 			//direction.x -= 1;
-			direction = glm::rotate<float>(direction, 0.1);
+			direction = glm::rotate<float>(direction, -0.05);
 			break;
 		}
 		glm::normalize(entityVel.direction);
@@ -85,5 +85,5 @@ void EventManager::processMove(Event event) {
 
 void EventManager::processShoot(Event event) {
 	auto bullet = _assets->createBullet(true);
-	_registry->get<Position>(bullet) = _registry->get<Position>(event.entities()[0]);
+	_registry->get<Transform>(bullet) = _registry->get<Transform>(event.entities()[0]);
 }
