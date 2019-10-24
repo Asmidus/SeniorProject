@@ -12,7 +12,9 @@ entt::entity AssetManager::createPlayer() {
 	auto entity = _registry->create();
 	std::unordered_map<unsigned int, Event::Type> mouseMap;
 	std::unordered_map<unsigned int, Event::Type> keyMap;
+	std::unordered_map<Event::Type, unsigned int> cooldowns;
 	mouseMap[SDL_BUTTON_LEFT] = Event::Type::shootBullet;
+	cooldowns[Event::Type::shootBullet] = 20;
 	keyMap[SDLK_w] = Event::Type::moveUp;
 	keyMap[SDLK_s] = Event::Type::moveDown;
 	keyMap[SDLK_d] = Event::Type::moveRight;
@@ -22,6 +24,7 @@ entt::entity AssetManager::createPlayer() {
 	_registry->assign<KeyListener>(entity, keyMap);
 	_registry->assign<Sprite>(entity, "media/PlayerShip.png", 50, 50);
 	_registry->assign<Transform>(entity);
+	_registry->assign<Cooldown>(entity, cooldowns);
 	return entity;
 }
 

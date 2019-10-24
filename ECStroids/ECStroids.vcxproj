@@ -163,6 +163,7 @@
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Audio.h" />
     <ClInclude Include="Components.h" />
+    <ClInclude Include="Cooldown.h" />
     <ClInclude Include="Data.h" />
     <ClInclude Include="Errors.h" />
     <ClInclude Include="Event.h" />

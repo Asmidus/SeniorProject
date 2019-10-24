@@ -65,6 +65,11 @@ void Systems::moveEntities() {
 }
 
 void Systems::checkInput() {
+	//decrement any cooldowns for all entities before checking input
+	_registry->view<Cooldown>().each(
+		[](auto & cooldown) {
+			cooldown.decrementCooldowns();
+		});
 	SDL_Event evnt;
 	while (SDL_PollEvent(&evnt)) {
 		switch (evnt.type) {
@@ -91,7 +96,12 @@ void Systems::checkInput() {
 	for (auto key : _inputs->getPressedKeys()) {
 		for (auto entity : view) {
 			if (view.get(entity).map.find(key) != view.get(entity).map.end()) {
-				_events->registerEvent(Event(view.get(entity).map[key], entity));
+				auto cooldowns = _registry->try_get<Cooldown>(entity);
+				auto eventType = view.get(entity).map[key];
+				if (cooldowns && !cooldowns->trigger(eventType)) {
+					continue;
+				}
+				_events->registerEvent(Event(eventType, entity));
 			}
 		}
 	}
