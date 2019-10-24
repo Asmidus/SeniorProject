@@ -1,5 +1,8 @@
 #pragma once
 #include "entt/entt.hpp"
+
+//Events are essentially actions that are triggered from something.
+//They can occur when two objects collide or when the user presses a button
 class Event {
 public:
 	enum Type {
@@ -25,7 +28,8 @@ public:
 	Type type() { return _type; }
 	std::vector<entt::entity> entities() { return _entities; }
 private:
+	//the list of entities effected by the event
 	std::vector<entt::entity> _entities;
+	//the type of event
 	Type _type;
-	unsigned int _subType;
 };

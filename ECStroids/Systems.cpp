@@ -11,53 +11,42 @@
 
 
 
-void Systems::init(GLint x, GLint y) {
-	xOffset = x;
-	yOffset = y;
-}
-
 void Systems::drawSprites() {
 	_registry->view<Sprite, Transform>().each(
-		[this](auto& sprite, auto& transform) {
-			//update the sprite SDL_Rect
-			sprite.dest.x = transform.pos.x;
-			sprite.dest.y = transform.pos.y;
-			if (transform.angle == 0) {
-				TextureManager::Draw(sprite.texture, sprite.src, sprite.dest);
-				if (sprite.scrolling) {
-					TextureManager::Draw(sprite.texture, sprite.src, sprite.scrollDest);
-				}
-			} else {
-				TextureManager::Draw(sprite.texture, sprite.src, sprite.dest, &transform.center, transform.angle);
-			}
+		[](auto& sprite, auto& transform) {
+			//if (transform.angle == 0) {
+			//	TextureManager::Draw(sprite.texture, sprite.src, sprite.dest);
+			//	//if (sprite.scrolling) {
+			//	//	TextureManager::Draw(sprite.texture, sprite.src, sprite.scrollDest);
+			//	//}
+			//} else {
+			TextureManager::Draw(sprite.texIndex, sprite.src, transform.rect, &transform.center, transform.angle);
+			//}
 		});
 }
 
 void Systems::moveEntities() {
 	_registry->view<Transform, Velocity>().each(
 		[](auto& transform, auto& velocity) {
-			//if the entity has a direction it is trying to move in
-			if (velocity.direction != glm::vec2(0, 0)) {
-				glm::vec2 deltaVel = glm::vec2(0, 0);
-				//if the entity is trying to accelerate in its given direction, apply that acceleration
-				if (velocity.currAccel != 0) {
-					deltaVel = glm::normalize(velocity.direction) * (velocity.currAccel / 60);
-				//if the entity is not trying to accelerate, decelerate it by its deceleration amount
-				} else if(glm::length(velocity.currVel) > 0) {
-					deltaVel = glm::normalize(velocity.currVel) * -(velocity.decel / 60);
-				}
-				//apply the change in velocity
-				velocity.currVel += deltaVel;
-				//if the entity's net speed is faster than the max, cap it
-				if (glm::length(velocity.currVel) > velocity.maxSpeed) {
-					velocity.currVel = glm::normalize(velocity.currVel) * velocity.maxSpeed;
-				//if the entity's net speed is essentially zero, reset the current velocity vector
-				} else if (glm::length(velocity.currVel) < 0.01) {
-					velocity.currVel = glm::vec2(0, 0);
-				}
+			glm::vec2 deltaVel = glm::vec2(0, 0);
+			//if the entity is trying to accelerate in its given direction, apply that acceleration
+			if (velocity.currAccel != 0) {
+				deltaVel = glm::normalize(velocity.direction) * (velocity.currAccel / 60);
+			//if the entity is not trying to accelerate, decelerate it by its deceleration amount
+			} else if(glm::length(velocity.currVel) > 0) {
+				deltaVel = glm::normalize(velocity.currVel) * -(velocity.decel / 60);
+			}
+			//apply the change in velocity
+			velocity.currVel += deltaVel;
+			//if the entity's net speed is faster than the max, cap it
+			if (glm::length(velocity.currVel) > velocity.maxSpeed) {
+				velocity.currVel = glm::normalize(velocity.currVel) * velocity.maxSpeed;
+			//if the entity's net speed is essentially zero, reset the current velocity vector
+			} else if (glm::length(velocity.currVel) < 0.01) {
+				velocity.currVel = glm::vec2(0, 0);
 			}
 			//update the transform of the entity
-			transform.pos += velocity.currVel;
+			transform.updatePos(velocity.currVel);
 			transform.angle = glm::angle(velocity.direction, glm::vec2(1, 0))*(180/3.14159);
 			//make sure we can get angles larger than 180 degrees
 			if (velocity.direction.y < 0) {

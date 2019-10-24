@@ -26,6 +26,7 @@ void MainGame::run() {
 
 void MainGame::initSystems() {
 	//Initialize SDL
+	SDL_Init(SDL_INIT_EVERYTHING);
 	_renderer = _window.create("Test Engine", _screenWidth, _screenHeight, 0);
 	TextureManager::init(_renderer);
 	srand(time(0));
@@ -75,6 +76,15 @@ void MainGame::processInput() {
 
 void MainGame::drawGame() {
 	SDL_RenderClear(_renderer);
+	//static SDL_Texture* tex1 = TextureManager::LoadTexture("media/PlayerShip.png");
+	//static SDL_Texture* tex2 = TextureManager::LoadTexture("media/Projectile.png");
+	//SDL_Rect s;
+	//s.x = 0;
+	//s.y = 0;
+	//s.w = 50;
+	//s.h = 50;
+	//TextureManager::Draw(tex1, s, s);
+	//TextureManager::Draw(tex2, s, s);
 	_systems.drawSprites();
 	SDL_RenderPresent(_renderer);
 	//_window.swapBuffer();

@@ -17,7 +17,7 @@ entt::entity AssetManager::createPlayer() {
 	keyMap[SDLK_s] = Event::Type::moveDown;
 	keyMap[SDLK_d] = Event::Type::moveRight;
 	keyMap[SDLK_a] = Event::Type::moveLeft;
-	_registry->assign<Velocity>(entity, 1.0f, 0.0f);
+	_registry->assign<Velocity>(entity, glm::vec2(1, 0));
 	_registry->assign<MouseListener>(entity, mouseMap);
 	_registry->assign<KeyListener>(entity, keyMap);
 	_registry->assign<Sprite>(entity, "media/PlayerShip.png", 50, 50);
@@ -25,10 +25,15 @@ entt::entity AssetManager::createPlayer() {
 	return entity;
 }
 
-entt::entity AssetManager::createBullet(bool friendly, bool tracking) {
+entt::entity AssetManager::createBullet(entt::entity& shooter, bool tracking) {
 	auto entity = _registry->create();
-	//_registry->assign<Velocity>(entity, 10.0f, 0.0f);
-	//_registry->assign<Position>(entity, 0.0f, 0.0f);
-	//_registry->assign<Sprite>(entity, "media/Projectile.png", 20, 20);
+	auto& shooterTransform = _registry->get<Transform>(shooter);
+	static unsigned int bulletSize = 10;
+	glm::vec2 spawnPos = shooterTransform.pos;
+	spawnPos.x += shooterTransform.rect.w / 2 - bulletSize / 2;
+	spawnPos.y += shooterTransform.rect.h / 2 - bulletSize / 2;
+	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 10.0f);
+	_registry->assign<Transform>(entity, spawnPos.x, spawnPos.y, bulletSize, bulletSize);
+	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50);
 	return entity;
 }

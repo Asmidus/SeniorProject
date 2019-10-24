@@ -16,8 +16,6 @@ public:
 		src.w = w;
 		src.h = h;
 		src.x = src.y = 0;
-		dest.w = w;
-		dest.h = h;
 		setSprite(path);
 	}
 
@@ -27,8 +25,6 @@ public:
 		delay = mSpeed;
 		src.w = w;
 		src.h = h;
-		dest.w = w;
-		dest.h = h;
 		setSprite(path);
 	}
 
@@ -40,29 +36,29 @@ public:
 	//	setSprite(path);
 	//}
 
-	~Sprite() {
-		SDL_DestroyTexture(texture);
-	}
+	//~Sprite() {
+	//	SDL_DestroyTexture(texture);
+	//}
 
 	void setSprite(const char* path) {
-		texture = TextureManager::LoadTexture(path);
+		texIndex = TextureManager::LoadTexture(path);
 	}
 
-	void setColor(int r, int g, int b) {
-		if (r < 0) {
-			r = 0;
-		}
-		if (g < 0) {
-			g = 0;
-		}
-		if (b < 0) {
-			b = 0;
-		}
-		this->r = r;
-		this->g = g;
-		this->b = b;
-		SDL_SetTextureColorMod(texture, r, g, b);
-	}
+	//void setColor(int r, int g, int b) {
+	//	if (r < 0) {
+	//		r = 0;
+	//	}
+	//	if (g < 0) {
+	//		g = 0;
+	//	}
+	//	if (b < 0) {
+	//		b = 0;
+	//	}
+	//	this->r = r;
+	//	this->g = g;
+	//	this->b = b;
+	//	SDL_SetTextureColorMod(texture, r, g, b);
+	//}
 
 	//void update() {
 	//	if (animated) {
@@ -87,22 +83,11 @@ public:
 	//	}
 	//}
 
-	//void draw() override {
-	//	if (!rotated) {
-	//		TextureManager::Draw(Game::renderer, texture, src, dest);
-	//		if (scrolling) {
-	//			TextureManager::Draw(Game::renderer, texture, src, scrollDest);
-	//		}
-	//	} else {
-	//		TextureManager::Draw(Game::renderer, texture, src, dest, transform->center, transform->angle);
-	//	}
-	//}
-
 	bool animated = false;
 	bool scrolling = false;
 	float angle = 0.0f;
 	int frames = 0;
 	double delay = 100;
-	SDL_Rect src, dest, scrollDest;
-	SDL_Texture* texture;
+	SDL_Rect src, scrollDest;
+	unsigned int texIndex;
 };

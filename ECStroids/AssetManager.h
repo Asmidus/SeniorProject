@@ -7,7 +7,7 @@ public:
 	~AssetManager();
 
 	entt::entity createPlayer();
-	entt::entity createBullet(bool friendly, bool tracking = false);
+	entt::entity createBullet(entt::entity& shooter, bool tracking = false);
 private:
 	entt::registry* _registry;
 };
