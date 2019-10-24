@@ -1,11 +1,15 @@
 #pragma once
 #include "entt/entt.hpp"
-class Event
-{
+class Event {
 public:
 	enum Type {
 		collision,
-		button
+		button,
+		moveUp,
+		moveDown,
+		moveRight,
+		moveLeft,
+		shootBullet
 	};
 	Event();
 	Event(const Type& type, const std::vector<entt::entity>& entities) {
@@ -14,7 +18,7 @@ public:
 	}
 	Event(const Type& type, const entt::entity& entity) {
 		_type = type;
-		_entities = {entity};
+		_entities = { entity };
 	}
 	~Event();
 
@@ -23,6 +27,5 @@ public:
 private:
 	std::vector<entt::entity> _entities;
 	Type _type;
-	
+	unsigned int _subType;
 };
-

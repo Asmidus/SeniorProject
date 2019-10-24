@@ -31,17 +31,43 @@ void Systems::drawSprites() {
 }
 
 void Systems::moveEntities() {
-	//registry.view<Position, Velocity>().each(
-	//	[](auto& position, auto& velocity) {
-	//		position.x += velocity.dx;
-	//		position.y += velocity.dy;
-	//	});
-	auto view = _registry->view<Position>();
-	std::vector<entt::entity> a;
-	int count = 0;
-	for (auto entity : view) {
-		a.push_back(entity);
-	}
+	_registry->view<Position, Velocity>().each(
+		[](auto& position, auto& velocity) {
+		if (velocity.direction != glm::vec2(0, 0)) {
+			glm::vec2 deltaVel = glm::normalize(velocity.direction) * (velocity.currAccel / 60);
+			velocity.currVel += deltaVel;
+			if (glm::length(velocity.currVel) > velocity.maxSpeed) {
+				velocity.currVel = glm::normalize(velocity.currVel) * velocity.maxSpeed;
+			}
+		}
+		position.x += velocity.currVel.x;
+		position.y += velocity.currVel.y;
+
+		//if (velocity.direction != glm::vec2(0, 0)) {
+		//	velocity.direction = glm::normalize(velocity.direction);
+		//	//if (velocity.currSpeed < velocity.maxSpeed) {
+		//	//	velocity.currSpeed += velocity.acceleration / 60;
+		//	//	if (velocity.currSpeed > velocity.maxSpeed) {
+		//	//		velocity.currSpeed = velocity.maxSpeed;
+		//	//	}
+		//	//}									  
+		//} else {								  
+		//	velocity.currSpeed -= velocity.acceleration / 60;
+		//	if (velocity.currSpeed < 0.05) {
+		//		velocity.currSpeed = 0;
+		//	}
+		//}										  
+		//position.x += velocity.direction.x*velocity.currSpeed;
+		//position.y += velocity.direction.y*velocity.currSpeed;
+		//velocity.direction = glm::vec2(0, 0);
+		velocity.currAccel = 0;
+	});
+	//auto view = _registry->view<Position>();
+	//std::vector<entt::entity> a;
+	//int count = 0;
+	//for (auto entity : view) {
+	//	a.push_back(entity);
+	//}
 	//_events->registerEvent(Event(Event::Type::collision, a));
 }
 

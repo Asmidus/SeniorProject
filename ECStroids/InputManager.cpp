@@ -1,13 +1,17 @@
 #include "InputManager.h"
+#include <algorithm>
+
+
 
 InputManager::InputManager() : _mouseCoords(0.0f) {}
-
 
 InputManager::~InputManager() {}
 
 void InputManager::pressKey(unsigned int keyID) {
 	//_keyMap[keyID] = true;
-	_pressedKeys.push_back(keyID);
+	if (std::find(_pressedKeys.begin(), _pressedKeys.end(), keyID) == _pressedKeys.end()) {
+		_pressedKeys.push_back(keyID);
+	}
 }
 
 void InputManager::releaseKey(unsigned int keyID) {

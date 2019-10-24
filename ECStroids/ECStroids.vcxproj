@@ -149,7 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AssetManager.h" />
-    <ClInclude Include="Audio.hpp" />
+    <ClInclude Include="Audio.h" />
     <ClInclude Include="Components.h" />
     <ClInclude Include="Data.h" />
     <ClInclude Include="Errors.h" />

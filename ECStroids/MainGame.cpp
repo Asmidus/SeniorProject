@@ -12,7 +12,7 @@
 
 MainGame::MainGame() : _screenWidth(800), _screenHeight(600),
 _gameState(GameState::PLAY), _fpsLimiter(120.0f), 
-_assets(&_registry), _events(&_registry), _systems(&_registry, &_events, &_inputManager) {}
+_assets(&_registry), _events(&_registry, &_assets), _systems(&_registry, &_events, &_inputManager) {}
 
 
 MainGame::~MainGame() {
