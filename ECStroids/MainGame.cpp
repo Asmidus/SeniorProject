@@ -28,7 +28,8 @@ void MainGame::initSystems() {
 	//Initialize SDL
 	SDL_Init(SDL_INIT_EVERYTHING);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
-	_renderer = _window.create("Test Engine", _screenWidth, _screenHeight, 0);
+	_renderer = _window.create("ECStroids", _screenWidth, _screenHeight, 0);
+	_systems.init(_screenWidth, _screenHeight);
 	TextureManager::init(_renderer);
 	srand(time(0));
 }
@@ -41,11 +42,19 @@ void MainGame::gameLoop() {
 	while (_gameState != GameState::EXIT) {
 		_fpsLimiter.begin();
 		_systems.updateDelta(1 / _fps);
+		_systems.checkLifetimes();
 		//processInput();
 		_systems.checkInput();
 		_systems.moveEntities();
 		_events.processEvents(1 / _fps);
 		drawGame();
+		//static unsigned int loop = 0;
+		//if (loop % 60 == 0) {
+		//	loop = 0;
+		//	std::cout << _fps << " with " << _registry.size() << std::endl;
+		//} else {
+		//	loop++;
+		//}
 		_fps = _fpsLimiter.end();
 	}
 }

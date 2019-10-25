@@ -70,6 +70,21 @@ void Systems::moveEntities() {
 			//reset the current acceleration
 			velocity.currAccel = 0;
 	});
+	_registry->view<Transform, ScreenWrap>().each(
+		[this](auto & transform, auto & wrap) {
+			if (transform.pos.x < -transform.rect.w) {
+				transform.pos.x = _screenWidth;
+			} else if(transform.pos.x > _screenWidth) {
+				transform.pos.x = -transform.rect.w;
+			}
+			if (transform.pos.y < -transform.rect.h) {
+				transform.pos.y = _screenHeight;
+			} else if (transform.pos.y > _screenHeight) {
+				transform.pos.y = -transform.rect.h;
+			}
+			transform.rect.x = transform.pos.x;
+			transform.rect.y = transform.pos.y;
+		});
 	//auto view = _registry->view<Position>();
 	//std::vector<entt::entity> a;
 	//int count = 0;
@@ -126,6 +141,17 @@ void Systems::checkInput() {
 			if (keyView.get(entity).map.find(key) != keyView.get(entity).map.end()) {
 				_events->registerEvent(Event(keyView.get(entity).map[key], entity));
 			}
+		}
+	}
+}
+
+void Systems::checkLifetimes() {
+	auto view = _registry->view<Lifetime>();
+	for (auto& entity : view) {
+		auto& lifetime = _registry->get<Lifetime>(entity);
+		lifetime.timeLeft -= _dt;
+		if (lifetime.timeLeft <= 0) {
+			_registry->destroy(entity);
 		}
 	}
 }

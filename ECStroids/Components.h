@@ -7,3 +7,5 @@
 #include "Sprite.h"
 #include "Cooldown.h"
 #include "Animation.h"
+#include "ScreenWrap.h"
+#include "Lifetime.h"

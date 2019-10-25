@@ -116,5 +116,11 @@
     <ClInclude Include="Animation.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="ScreenWrap.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Lifetime.h">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

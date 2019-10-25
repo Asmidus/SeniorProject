@@ -27,6 +27,7 @@ entt::entity AssetManager::createPlayer() {
 	_registry->assign<Transform>(entity, 0, 0, 50, 50, 15, 25);
 	_registry->assign<Cooldown>(entity, cooldowns);
 	_registry->assign<Animation>(entity, 5, 0.08, true);
+	_registry->assign<ScreenWrap>(entity);
 	return entity;
 }
 
@@ -42,5 +43,7 @@ entt::entity AssetManager::createBullet(entt::entity& shooter, bool tracking) {
 	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 5.0f);
 	_registry->assign<Transform>(entity, rotatedX, rotatedY, bulletSize, bulletSize);
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50);
+	_registry->assign<ScreenWrap>(entity);
+	_registry->assign<Lifetime>(entity, 1.5);
 	return entity;
 }
