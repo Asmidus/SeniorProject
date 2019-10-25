@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include "AssetManager.h"
 #include "Components.h"
+#include <iostream>
 
 
 
@@ -23,7 +24,7 @@ entt::entity AssetManager::createPlayer() {
 	_registry->assign<MouseListener>(entity, mouseMap);
 	_registry->assign<KeyListener>(entity, keyMap);
 	_registry->assign<Sprite>(entity, "media/ECSplayer.png", 50, 50);
-	_registry->assign<Transform>(entity, 0, 0, 25, 25);
+	_registry->assign<Transform>(entity, 0, 0, 25, 25, 5, 12.5);
 	_registry->assign<Cooldown>(entity, cooldowns);
 	return entity;
 }
@@ -32,13 +33,13 @@ entt::entity AssetManager::createBullet(entt::entity& shooter, bool tracking) {
 	auto entity = _registry->create();
 	auto& shooterTransform = _registry->get<Transform>(shooter);
 	static unsigned int bulletSize = 10;
-	//TODO maybe find a better way to do this?
-	glm::vec2 spawnPos = shooterTransform.pos;
-	spawnPos.x += shooterTransform.rect.w / 2 - bulletSize / 2;
-	spawnPos.y += shooterTransform.rect.h / 2 - bulletSize / 2;
-	spawnPos += _registry->get<Velocity>(shooter).direction * glm::vec2(shooterTransform.rect.w / 2);
-	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 10.0f);
-	_registry->assign<Transform>(entity, spawnPos.x, spawnPos.y, bulletSize, bulletSize);
+	glm::vec2 point = glm::vec2(shooterTransform.rect.w, shooterTransform.rect.h/2);
+	float angle = (shooterTransform.angle) * (3.14159 / 180); // Convert to radians
+	auto center = shooterTransform.center;
+	float rotatedX = cos(angle) * (point.x - center.x) - sin(angle) * (point.y - center.y) + center.x + shooterTransform.rect.x - bulletSize/2;
+	float rotatedY = sin(angle) * (point.x - center.x) + cos(angle) * (point.y - center.y) + center.y + shooterTransform.rect.y - bulletSize/2;
+	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 5.0f);
+	_registry->assign<Transform>(entity, rotatedX, rotatedY, bulletSize, bulletSize);
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50);
 	return entity;
 }

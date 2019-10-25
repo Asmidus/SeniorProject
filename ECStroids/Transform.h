@@ -30,6 +30,11 @@ struct Transform {
 		center.y = h / 2;
 	}
 
+	Transform(float x, float y, float w, float h, float cx, float cy) : Transform(x, y, w, h) {
+		center.x = cx;
+		center.y = cy;
+	}
+
 	Transform(const Transform& other, float w, float h) : Transform(other.rect.x, other.rect.y, w, h) {
 		angle = other.angle;
 	}
