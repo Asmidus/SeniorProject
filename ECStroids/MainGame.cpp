@@ -27,6 +27,7 @@ void MainGame::run() {
 void MainGame::initSystems() {
 	//Initialize SDL
 	SDL_Init(SDL_INIT_EVERYTHING);
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 	_renderer = _window.create("Test Engine", _screenWidth, _screenHeight, 0);
 	TextureManager::init(_renderer);
 	srand(time(0));

@@ -14,6 +14,9 @@ unsigned int TextureManager::LoadTexture(const char* fileName) {
 	if (_texIndices.find(fileName) == _texIndices.end()) {
 		SDL_Surface* tempSurface = IMG_Load(fileName);
 		SDL_Texture* tex = SDL_CreateTextureFromSurface(_renderer, tempSurface);
+		if (!tex) {
+			std::cout << "OH NO" << std::endl;
+		}
 		SDL_FreeSurface(tempSurface);
 		_texIndices[fileName] = _textures.size();
 		_textures.push_back(tex);
