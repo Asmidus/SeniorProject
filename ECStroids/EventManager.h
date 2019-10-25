@@ -13,7 +13,7 @@ public:
 	//Register an event to be processed
 	void registerEvent(Event event);
 	//Process all events in queue
-	void processEvents();
+	void processEvents(float dt);
 
 	//These functions each process a specific type of event
 	void processCollision(Event event);
@@ -27,5 +27,6 @@ private:
 	AssetManager* _assets;
 	//A pointer to the registry
 	entt::registry* _registry;
+	float _dt;
 };
 

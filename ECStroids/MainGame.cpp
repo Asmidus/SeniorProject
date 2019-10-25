@@ -11,7 +11,7 @@
 #include "TextureManager.h"
 
 MainGame::MainGame() : _screenWidth(800), _screenHeight(600),
-_gameState(GameState::PLAY), _fpsLimiter(120.0f), 
+_gameState(GameState::PLAY), _fpsLimiter(120.0f), _fps(30.0f),
 _assets(&_registry), _events(&_registry, &_assets), _systems(&_registry, &_events, &_inputManager) {}
 
 
@@ -40,11 +40,12 @@ void MainGame::initLevel() {
 void MainGame::gameLoop() {
 	while (_gameState != GameState::EXIT) {
 		_fpsLimiter.begin();
-		drawGame();
+		_systems.updateDelta(1 / _fps);
 		//processInput();
 		_systems.checkInput();
 		_systems.moveEntities();
-		_events.processEvents();
+		_events.processEvents(1 / _fps);
+		drawGame();
 		_fps = _fpsLimiter.end();
 	}
 }

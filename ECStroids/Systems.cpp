@@ -12,32 +12,47 @@
 
 
 void Systems::drawSprites() {
+	updateAnimations();
 	_registry->view<Sprite, Transform>().each(
 		[](auto& sprite, auto& transform) {
-			//if (transform.angle == 0) {
-			//	TextureManager::Draw(sprite.texture, sprite.src, sprite.dest);
-			//	//if (sprite.scrolling) {
-			//	//	TextureManager::Draw(sprite.texture, sprite.src, sprite.scrollDest);
-			//	//}
-			//} else {
 			TextureManager::Draw(sprite.texIndex, sprite.src, transform.rect, &transform.center, transform.angle);
-			//}
+		});
+}
+
+void Systems::updateAnimations() {
+	_registry->view<Sprite, Animation>().each(
+		[this](auto& sprite, auto& animation) {
+			if (animation.active) {
+				animation.timeSinceLastFrame += _dt;
+				if (animation.timeSinceLastFrame > animation.frameTime[animation.currentAnimation]) {
+					unsigned int currFrame = 1 + (sprite.src.x / sprite.src.w);
+					if (currFrame > animation.frames[animation.currentAnimation]) {
+						currFrame = 0;
+					}
+					sprite.src.x = sprite.src.w * currFrame;
+					sprite.src.y = sprite.src.h * animation.currentAnimation;
+					animation.timeSinceLastFrame = 0;
+				}
+			} else {
+				sprite.src.x = 0;
+			}
+			animation.active = false;
 		});
 }
 
 void Systems::moveEntities() {
 	_registry->view<Transform, Velocity>().each(
-		[](auto& transform, auto& velocity) {
+		[this](auto& transform, auto& velocity) {
 			glm::vec2 deltaVel = glm::vec2(0, 0);
 			//if the entity is trying to accelerate in its given direction, apply that acceleration
 			if (velocity.currAccel != 0) {
-				deltaVel = glm::normalize(velocity.direction) * (velocity.currAccel / 60);
+				deltaVel = glm::normalize(velocity.direction) * (velocity.currAccel);
 			//if the entity is not trying to accelerate, decelerate it by its deceleration amount
 			} else if(glm::length(velocity.currVel) > 0) {
-				deltaVel = glm::normalize(velocity.currVel) * -(velocity.decel / 60);
+				deltaVel = glm::normalize(velocity.currVel) * -(velocity.decel);
 			}
 			//apply the change in velocity
-			velocity.currVel += deltaVel;
+			velocity.currVel += (deltaVel * _dt);
 			//if the entity's net speed is faster than the max, cap it
 			if (glm::length(velocity.currVel) > velocity.maxSpeed) {
 				velocity.currVel = glm::normalize(velocity.currVel) * velocity.maxSpeed;
@@ -46,7 +61,7 @@ void Systems::moveEntities() {
 				velocity.currVel = glm::vec2(0, 0);
 			}
 			//update the transform of the entity
-			transform.updatePos(velocity.currVel);
+			transform.updatePos(velocity.currVel * 120.0f * _dt);
 			transform.angle = glm::angle(velocity.direction, glm::vec2(1, 0))*(180/3.14159);
 			//make sure we can get angles larger than 180 degrees
 			if (velocity.direction.y < 0) {
@@ -67,8 +82,8 @@ void Systems::moveEntities() {
 void Systems::checkInput() {
 	//decrement any cooldowns for all entities before checking input
 	_registry->view<Cooldown>().each(
-		[](auto & cooldown) {
-			cooldown.decrementCooldowns();
+		[this](auto & cooldown) {
+			cooldown.decrementCooldowns(_dt);
 		});
 	SDL_Event evnt;
 	while (SDL_PollEvent(&evnt)) {

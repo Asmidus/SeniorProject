@@ -2,11 +2,11 @@
 #include <glm/glm.hpp>
 
 struct Velocity {
-	Velocity(glm::vec2 dir) :
+	Velocity(glm::vec2 dir, float acceleration, float max) :
 		direction(dir),
-		maxSpeed(2),
-		accel(1),
-		decel(0.1),
+		maxSpeed(max),
+		accel(acceleration),
+		decel(acceleration/10),
 		currVel(0, 0),
 		currAccel(0) {}
 	Velocity(glm::vec2 dir, float speed) :

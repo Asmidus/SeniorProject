@@ -17,7 +17,7 @@ float FPSLimiter::end() {
 	if (1000.0f / _maxFPS > frameTicks) {
 		SDL_Delay(1000.0f / _maxFPS - frameTicks);
 	}
-	return _fps;
+	return _fps < 0.003 ? 10 : _fps;
 }
 
 void FPSLimiter::calculateFPS() {

@@ -6,3 +6,4 @@
 #include "KeyListener.h"
 #include "Sprite.h"
 #include "Cooldown.h"
+#include "Animation.h"

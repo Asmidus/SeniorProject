@@ -13,7 +13,8 @@ void EventManager::registerEvent(Event event) {
 	_events.push_back(event);
 }
 
-void EventManager::processEvents() {
+void EventManager::processEvents(float dt) {
+	_dt = dt;
 	for (auto event : _events) {
 		switch (event.type()) {
 		case Event::shootBullet:
@@ -59,10 +60,14 @@ void EventManager::processButton(Event event) {
 void EventManager::processMove(Event event) {
 	for (auto entity : event.entities()) {
 		auto& entityVel = _registry->get<Velocity>(entity);
+		auto animation = _registry->try_get<Animation>(entity);
 		auto& direction = entityVel.direction;
 		switch (event.type()) {
 		case Event::moveUp:
 			//direction.y += 1;
+			if (animation) {
+				animation->active = true;
+			}
 			entityVel.currAccel = entityVel.accel;
 			break;
 		case Event::moveDown:
@@ -70,12 +75,12 @@ void EventManager::processMove(Event event) {
 			//direction.y -= 1;
 			break;
 		case Event::moveRight:
-			direction = glm::rotate<float>(direction, 0.05);
+			direction = glm::rotate<float>(direction, 6*_dt);
 			//direction.x += 1;
 			break;
 		case Event::moveLeft:
 			//direction.x -= 1;
-			direction = glm::rotate<float>(direction, -0.05);
+			direction = glm::rotate<float>(direction, -6*_dt);
 			break;
 		}
 		glm::normalize(entityVel.direction);
