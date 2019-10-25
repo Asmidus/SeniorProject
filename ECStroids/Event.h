@@ -15,7 +15,7 @@ public:
 		shootBullet
 	};
 	Event();
-	Event(const Type& type, const std::vector<entt::entity>& entities) {
+	Event(const Type& type, const std::vector<entt::entity> entities) {
 		_type = type;
 		_entities = entities;
 	}

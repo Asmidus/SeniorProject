@@ -14,6 +14,7 @@ public:
 	void drawSprites();
 	void updateAnimations();
 	void moveEntities();
+	void checkCollisions();
 	void checkInput();
 	void checkLifetimes();
 private:

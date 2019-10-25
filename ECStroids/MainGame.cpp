@@ -46,6 +46,7 @@ void MainGame::gameLoop() {
 		//processInput();
 		_systems.checkInput();
 		_systems.moveEntities();
+		_systems.checkCollisions();
 		_events.processEvents(1 / _fps);
 		drawGame();
 		//static unsigned int loop = 0;

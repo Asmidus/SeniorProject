@@ -14,20 +14,23 @@ entt::entity AssetManager::createPlayer() {
 	std::unordered_map<unsigned int, Event::Type> mouseMap;
 	std::unordered_map<unsigned int, Event::Type> keyMap;
 	std::unordered_map<Event::Type, float> cooldowns;
-	mouseMap[SDL_BUTTON_LEFT] = Event::Type::shootBullet;
+	//mouseMap[SDL_BUTTON_LEFT] = Event::Type::shootBullet;
 	cooldowns[Event::Type::shootBullet] = 0.2f;
 	keyMap[SDLK_w] = Event::Type::moveUp;
 	keyMap[SDLK_s] = Event::Type::moveDown;
 	keyMap[SDLK_d] = Event::Type::moveRight;
 	keyMap[SDLK_a] = Event::Type::moveLeft;
+	keyMap[SDLK_SPACE] = Event::Type::shootBullet;
 	_registry->assign<Velocity>(entity, glm::vec2(1, 0), 2, 2);
-	_registry->assign<MouseListener>(entity, mouseMap);
+	//_registry->assign<MouseListener>(entity, mouseMap);
 	_registry->assign<KeyListener>(entity, keyMap);
 	_registry->assign<Sprite>(entity, "media/ECSplayer.png", 50, 50);
 	_registry->assign<Transform>(entity, 0, 0, 50, 50, 15, 25);
 	_registry->assign<Cooldown>(entity, cooldowns);
 	_registry->assign<Animation>(entity, 5, 0.08, true);
 	_registry->assign<ScreenWrap>(entity);
+	_registry->assign<Collider>(entity, 10);
+	_registry->assign<entt::tag<"Player"_hs>>(entity);
 	return entity;
 }
 
@@ -45,5 +48,13 @@ entt::entity AssetManager::createBullet(entt::entity& shooter, bool tracking) {
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50);
 	_registry->assign<ScreenWrap>(entity);
 	_registry->assign<Lifetime>(entity, 1.5);
+	_registry->assign<Collider>(entity, 5);
+	if (_registry->has<entt::tag<"Player"_hs>>(shooter)) {
+		_registry->assign<entt::tag<"Player"_hs>>(entity);
+	} else {
+		_registry->assign<entt::tag<"Enemy"_hs>>(entity);
+	}
+
+
 	return entity;
 }

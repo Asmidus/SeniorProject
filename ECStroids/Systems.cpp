@@ -13,14 +13,14 @@
 
 void Systems::drawSprites() {
 	updateAnimations();
-	_registry->view<Sprite, Transform>().each(
+	_registry->group<Sprite>(entt::get<Transform>).each(
 		[](auto& sprite, auto& transform) {
 			TextureManager::Draw(sprite.texIndex, sprite.src, transform.rect, &transform.center, transform.angle);
 		});
 }
 
 void Systems::updateAnimations() {
-	_registry->view<Sprite, Animation>().each(
+	_registry->group<>(entt::get<Sprite, Animation>).each(
 		[this](auto& sprite, auto& animation) {
 			if (animation.active) {
 				animation.timeSinceLastFrame += _dt;
@@ -41,7 +41,7 @@ void Systems::updateAnimations() {
 }
 
 void Systems::moveEntities() {
-	_registry->view<Transform, Velocity>().each(
+	_registry->group<>(entt::get<Transform, Velocity>).each(
 		[this](auto& transform, auto& velocity) {
 			glm::vec2 deltaVel = glm::vec2(0, 0);
 			//if the entity is trying to accelerate in its given direction, apply that acceleration
@@ -70,8 +70,8 @@ void Systems::moveEntities() {
 			//reset the current acceleration
 			velocity.currAccel = 0;
 	});
-	_registry->view<Transform, ScreenWrap>().each(
-		[this](auto & transform, auto & wrap) {
+	_registry->group<>(entt::get<Transform, ScreenWrap>).each(
+		[this](auto entity, auto & transform, auto & wrap) {
 			if (transform.pos.x < -transform.rect.w) {
 				transform.pos.x = _screenWidth;
 			} else if(transform.pos.x > _screenWidth) {
@@ -92,6 +92,47 @@ void Systems::moveEntities() {
 	//	a.push_back(entity);
 	//}
 	//_events->registerEvent(Event(Event::Type::collision, a));
+}
+
+void Systems::checkCollisions() {
+	//TODO Brandon's collision algo
+	//auto group = _registry->group<Sprite, Transform, Collider>(entt::get<entt::tag<"Player"_hs>>);
+	//auto group2 = _registry->group<Sprite, Transform, Collider>(entt::get<entt::tag<"Enemy"_hs>>);
+	//for (auto& entity1 : group) {
+	//	auto& col1 = group.get<Collider>(entity1);
+	//	auto& trans1 = group.get<Transform>(entity1);
+	//	for (auto& entity2 : group2) {
+	//		auto& col2 = group.get<Collider>(entity1);
+	//		auto& trans2 = group.get<Transform>(entity1);
+	//		if (col1.circular && col2.circular) {
+	//			glm::vec2 e1Pos = trans1.pos + glm::vec2(trans1.center.x, trans1.center.y);
+	//			glm::vec2 e2Pos = trans2.pos + glm::vec2(trans2.center.x, trans2.center.y);
+	//			if (glm::length(e1Pos - e2Pos) < col1.radius + col2.radius) {
+	//				_events->registerEvent(Event(Event::Type::collision, { entity1, entity2 }));
+	//			}
+	//		}
+	//	}
+	//}
+	_registry->group<Transform, Collider>().each(
+		[=](auto& entity1, auto & trans1, auto & col1) {
+			if (_registry->has<entt::tag<"Player"_hs>>(entity1)) {
+				_registry->group<Transform, Collider>().each(
+					[=](auto& entity2, auto & trans2, auto & col2) {
+						if (_registry->has<entt::tag<"Enemy"_hs>>(entity2)) {
+							if (col1.circular && col2.circular) {
+								glm::vec2 e1Pos = trans1.pos + glm::vec2(trans1.center.x, trans1.center.y);
+								glm::vec2 e2Pos = trans2.pos + glm::vec2(trans2.center.x, trans2.center.y);
+								if (glm::length(e1Pos - e2Pos) < col1.radius + col2.radius) {
+									std::vector<entt::entity> entities;
+									entities.push_back(entity1);
+									entities.push_back(entity2);
+									_events->registerEvent(Event(Event::Type::collision, entities));
+								}
+							}
+						}
+					});
+			}
+		});
 }
 
 void Systems::checkInput() {
@@ -122,12 +163,12 @@ void Systems::checkInput() {
 	}
 	//For all mouse events, find every mouse listener
 	//and find out what event is tied to the button that is pressed and queue the event
-	auto view = _registry->view<MouseListener>();
+	auto mouseView = _registry->view<MouseListener>();
 	for (auto key : _inputs->getPressedKeys()) {
-		for (auto entity : view) {
-			if (view.get(entity).map.find(key) != view.get(entity).map.end()) {
+		for (auto entity : mouseView) {
+			if (mouseView.get(entity).map.find(key) != mouseView.get(entity).map.end()) {
 				auto cooldowns = _registry->try_get<Cooldown>(entity);
-				auto eventType = view.get(entity).map[key];
+				auto eventType = mouseView.get(entity).map[key];
 				if (cooldowns && !cooldowns->trigger(eventType)) {
 					continue;
 				}
@@ -139,6 +180,11 @@ void Systems::checkInput() {
 	for (auto key : _inputs->getPressedKeys()) {
 		for (auto entity : keyView) {
 			if (keyView.get(entity).map.find(key) != keyView.get(entity).map.end()) {
+				auto cooldowns = _registry->try_get<Cooldown>(entity);
+				auto eventType = keyView.get(entity).map[key];
+				if (cooldowns && !cooldowns->trigger(eventType)) {
+					continue;
+				}
 				_events->registerEvent(Event(keyView.get(entity).map[key], entity));
 			}
 		}
@@ -146,12 +192,19 @@ void Systems::checkInput() {
 }
 
 void Systems::checkLifetimes() {
-	auto view = _registry->view<Lifetime>();
-	for (auto& entity : view) {
-		auto& lifetime = _registry->get<Lifetime>(entity);
-		lifetime.timeLeft -= _dt;
-		if (lifetime.timeLeft <= 0) {
-			_registry->destroy(entity);
-		}
-	}
+	//auto view = _registry->view<Lifetime>();
+	//for (auto& entity : view) {
+	//	auto& lifetime = _registry->get<Lifetime>(entity);
+	//	lifetime.timeLeft -= _dt;
+	//	if (lifetime.timeLeft <= 0) {
+	//		_registry->destroy(entity);
+	//	}
+	//}
+	_registry->view<Lifetime>().each(
+		[this](auto & entity, auto & lifetime) {
+			lifetime.timeLeft -= _dt;
+			if (lifetime.timeLeft <= 0) {
+				_registry->destroy(entity);
+			}
+		});
 }

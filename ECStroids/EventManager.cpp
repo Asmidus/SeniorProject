@@ -35,15 +35,13 @@ void EventManager::processEvents(float dt) {
 }
 
 void EventManager::processCollision(Event event) {
-	//In the case of a collision, the first object is the collider, the second is the one being collided upon
-	//if (event.entities().size() >= 2) {
-	auto collider = event.entities()[0];
-	for (int i = 1; i < event.entities().size(); i++) {
-		auto collided = event.entities()[i];
-		_registry->get<Transform>(collided).rect.y += 1;
+	for (int i = 0; i < event.entities().size(); i++) {
+		entt::entity collided = event.entities().at(i);
+		auto& collider = _registry->get<Collider>(collided);
+		if (!_registry->has<entt::tag<"Player"_hs>>(collided)) {
+			_registry->destroy(collided);
+		}
 	}
-	_registry->get<Transform>(collider).rect.x += 1;
-	//}
 }
 
 void EventManager::processButton(Event event) {

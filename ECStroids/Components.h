@@ -9,3 +9,4 @@
 #include "Animation.h"
 #include "ScreenWrap.h"
 #include "Lifetime.h"
+#include "Collider.h"
