@@ -37,8 +37,18 @@ void EventManager::processEvents(float dt) {
 void EventManager::processCollision(Event event) {
 	for (int i = 0; i < event.entities().size(); i++) {
 		entt::entity collided = event.entities().at(i);
+		if (!_registry->valid(collided)) {
+			continue;
+		}
 		auto& collider = _registry->get<Collider>(collided);
 		if (!_registry->has<entt::tag<"Player"_hs>>(collided)) {
+			if (_registry->has<entt::tag<"Split"_hs>>(collided)) {
+				for (int i = 0; i < rand() % 2 + 2; i++) {
+					_assets->createAsteroid(collided);
+				}
+			}
+			_registry->destroy(collided);
+		} else {
 			_registry->destroy(collided);
 		}
 	}

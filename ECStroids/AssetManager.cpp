@@ -28,7 +28,7 @@ entt::entity AssetManager::createPlayer() {
 	_registry->assign<Transform>(entity, 0, 0, 50, 50, 25, 25);
 	_registry->assign<Cooldown>(entity, cooldowns);
 	_registry->assign<Animation>(entity, 5, 0.08, true);
-	_registry->assign<ScreenWrap>(entity);
+	_registry->assign<entt::tag<"Screenwrap"_hs>>(entity);
 	_registry->assign<Collider>(entity, 15);
 	_registry->assign<entt::tag<"Player"_hs>>(entity);
 	return entity;
@@ -46,7 +46,7 @@ entt::entity AssetManager::createBullet(entt::entity& shooter, bool tracking) {
 	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 5.0f);
 	_registry->assign<Transform>(entity, rotatedX, rotatedY, bulletSize, bulletSize);
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50);
-	_registry->assign<ScreenWrap>(entity);
+	_registry->assign<entt::tag<"Screenwrap"_hs>>(entity);
 	_registry->assign<Lifetime>(entity, 1.5);
 	_registry->assign<Collider>(entity, 5);
 	if (_registry->has<entt::tag<"Player"_hs>>(shooter)) {
@@ -59,13 +59,31 @@ entt::entity AssetManager::createBullet(entt::entity& shooter, bool tracking) {
 	return entity;
 }
 
-entt::entity AssetManager::createAsteroid() {
+entt::entity AssetManager::createAsteroid(float x, float y) {
 	auto entity = _registry->create();
-	_registry->assign<Velocity>(entity, glm::vec2(0, 1), 3.0f);
-	_registry->assign<Transform>(entity, 300, 300, 100, 100);
+	float speed = 1 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 2));
+	_registry->assign<Velocity>(entity, glm::vec2(rand(), rand()), speed);
+	_registry->assign<Transform>(entity, x, y, 100, 100);
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50);
-	_registry->assign<ScreenWrap>(entity);
+	_registry->assign<entt::tag<"Screenwrap"_hs>>(entity);
+	_registry->assign<entt::tag<"Split"_hs>>(entity);
 	_registry->assign<Collider>(entity, 40);
+	_registry->assign<entt::tag<"Enemy"_hs>>(entity);
+	return entity;
+}
+
+entt::entity AssetManager::createAsteroid(entt::entity& parentAsteroid) {
+	auto entity = _registry->create();
+	auto& transform = _registry->get<Transform>(parentAsteroid);
+	float speed = _registry->get<Velocity>(parentAsteroid).maxSpeed + 0.5f;
+	_registry->assign<Velocity>(entity, glm::vec2(rand(), rand()), speed);
+	_registry->assign<Transform>(entity, transform.pos.x, transform.pos.y, transform.rect.w/2, transform.rect.h/2);
+	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50);
+	_registry->assign<entt::tag<"Screenwrap"_hs>>(entity);
+	if (transform.rect.w > 50) {
+		_registry->assign<entt::tag<"Split"_hs>>(entity);
+	}
+	_registry->assign<Collider>(entity, _registry->get<Collider>(parentAsteroid).radius/2);
 	_registry->assign<entt::tag<"Enemy"_hs>>(entity);
 	return entity;
 }

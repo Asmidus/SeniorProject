@@ -70,7 +70,7 @@ void Systems::moveEntities() {
 			//reset the current acceleration
 			velocity.currAccel = 0;
 	});
-	_registry->group<>(entt::get<Transform, ScreenWrap>).each(
+	_registry->group<>(entt::get<Transform, entt::tag<"Screenwrap"_hs>>).each(
 		[this](auto entity, auto & transform, auto & wrap) {
 			if (transform.pos.x < -transform.rect.w) {
 				transform.pos.x = _screenWidth;

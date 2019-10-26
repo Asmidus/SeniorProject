@@ -175,7 +175,6 @@
     <ClInclude Include="Lifetime.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="MouseListener.h" />
-    <ClInclude Include="ScreenWrap.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Systems.h" />
