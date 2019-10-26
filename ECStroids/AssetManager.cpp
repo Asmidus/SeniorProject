@@ -25,11 +25,11 @@ entt::entity AssetManager::createPlayer() {
 	//_registry->assign<MouseListener>(entity, mouseMap);
 	_registry->assign<KeyListener>(entity, keyMap);
 	_registry->assign<Sprite>(entity, "media/ECSplayer.png", 50, 50);
-	_registry->assign<Transform>(entity, 0, 0, 50, 50, 15, 25);
+	_registry->assign<Transform>(entity, 0, 0, 50, 50, 25, 25);
 	_registry->assign<Cooldown>(entity, cooldowns);
 	_registry->assign<Animation>(entity, 5, 0.08, true);
 	_registry->assign<ScreenWrap>(entity);
-	_registry->assign<Collider>(entity, 10);
+	_registry->assign<Collider>(entity, 15);
 	_registry->assign<entt::tag<"Player"_hs>>(entity);
 	return entity;
 }
@@ -56,5 +56,16 @@ entt::entity AssetManager::createBullet(entt::entity& shooter, bool tracking) {
 	}
 
 
+	return entity;
+}
+
+entt::entity AssetManager::createAsteroid() {
+	auto entity = _registry->create();
+	_registry->assign<Velocity>(entity, glm::vec2(0, 1), 3.0f);
+	_registry->assign<Transform>(entity, 300, 300, 100, 100);
+	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50);
+	_registry->assign<ScreenWrap>(entity);
+	_registry->assign<Collider>(entity, 40);
+	_registry->assign<entt::tag<"Enemy"_hs>>(entity);
 	return entity;
 }

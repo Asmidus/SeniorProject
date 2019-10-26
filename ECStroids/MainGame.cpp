@@ -21,6 +21,7 @@ MainGame::~MainGame() {
 void MainGame::run() {
 	initSystems();
 	_assets.createPlayer();
+	_assets.createAsteroid();
 	gameLoop();
 }
 
