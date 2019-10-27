@@ -61,7 +61,7 @@ entt::entity AssetManager::createBullet(entt::entity& shooter, bool tracking) {
 entt::entity AssetManager::createAsteroid(float x, float y) {
 	auto entity = _registry->create();
 	float speed = 1 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 2));
-	_registry->assign<Velocity>(entity, glm::vec2(1, 0), speed);
+	_registry->assign<Velocity>(entity, glm::vec2(rand(), rand()), speed);
 	_registry->assign<Transform>(entity, x, y, 100, 100);
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50);
 	_registry->assign<entt::tag<"Split"_hs>>(entity);
