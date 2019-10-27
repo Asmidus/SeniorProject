@@ -13,8 +13,8 @@
 
 void Systems::drawSprites() {
 	updateAnimations();
-	_registry->group<Sprite>(entt::get<Transform>).each(
-		[](auto& sprite, auto& transform) {
+	_registry->group<Sprite, Transform>().each(
+		[](auto entity, auto& sprite, auto& transform) {
 			TextureManager::Draw(sprite.texIndex, sprite.src, transform.rect, &transform.center, transform.angle);
 		});
 }
@@ -41,37 +41,39 @@ void Systems::updateAnimations() {
 }
 
 void Systems::moveEntities() {
-	_registry->group<>(entt::get<Transform, Velocity>).each(
-		[this](auto& transform, auto& velocity) {
-			glm::vec2 deltaVel = glm::vec2(0, 0);
-			//if the entity is trying to accelerate in its given direction, apply that acceleration
-			if (velocity.currAccel != 0) {
-				deltaVel = glm::normalize(velocity.direction) * (velocity.currAccel);
-			//if the entity is not trying to accelerate, decelerate it by its deceleration amount
-			} else if(glm::length(velocity.currVel) > 0) {
-				deltaVel = glm::normalize(velocity.currVel) * -(velocity.decel);
-			}
-			//apply the change in velocity
-			velocity.currVel += (deltaVel * _dt);
-			//if the entity's net speed is faster than the max, cap it
-			if (glm::length(velocity.currVel) > velocity.maxSpeed) {
-				velocity.currVel = glm::normalize(velocity.currVel) * velocity.maxSpeed;
-			//if the entity's net speed is essentially zero, reset the current velocity vector
-			} else if (glm::length(velocity.currVel) < 0.01) {
-				velocity.currVel = glm::vec2(0, 0);
+	_registry->group<Sprite, Transform, Velocity>().each(
+		[this](auto entity, auto & sprite, auto& transform, auto& velocity) {
+			if (!velocity.constant) {
+				glm::vec2 deltaVel = glm::vec2(0, 0);
+				//if the entity is trying to accelerate in its given direction, apply that acceleration
+				if (velocity.currAccel != 0) {
+					deltaVel = glm::normalize(velocity.direction) * (velocity.currAccel);
+					//if the entity is not trying to accelerate, decelerate it by its deceleration amount
+				} else if (velocity.decel && glm::length(velocity.currVel) > 0) {
+					deltaVel = glm::normalize(velocity.currVel) * -(velocity.decel);
+				}
+				//apply the change in velocity
+				velocity.currVel += (deltaVel * _dt);
+				//if the entity's net speed is faster than the max, cap it
+				if (glm::length(velocity.currVel) > velocity.maxSpeed) {
+					velocity.currVel = glm::normalize(velocity.currVel) * velocity.maxSpeed;
+					//if the entity's net speed is essentially zero, reset the current velocity vector
+				} else if (glm::length(velocity.currVel) < 0.01) {
+					velocity.currVel = glm::vec2(0, 0);
+				}
 			}
 			//update the transform of the entity
 			transform.updatePos(velocity.currVel * 120.0f * _dt);
-			transform.angle = glm::angle(velocity.direction, glm::vec2(1, 0))*(180/3.14159);
+			transform.angle = glm::angle(velocity.direction, glm::vec2(1, 0)) * (180 / 3.14159);
 			//make sure we can get angles larger than 180 degrees
 			if (velocity.direction.y < 0) {
 				transform.angle = 360 - transform.angle;
 			}
 			//reset the current acceleration
 			velocity.currAccel = 0;
-	});
-	_registry->group<>(entt::get<Transform, entt::tag<"Screenwrap"_hs>>).each(
-		[this](auto entity, auto & transform, auto & wrap) {
+		});
+	_registry->view<Transform>().each(
+		[this](auto& transform) {
 			if (transform.pos.x < -transform.rect.w) {
 				transform.pos.x = _screenWidth;
 			} else if(transform.pos.x > _screenWidth) {
@@ -85,52 +87,22 @@ void Systems::moveEntities() {
 			transform.rect.x = transform.pos.x;
 			transform.rect.y = transform.pos.y;
 		});
-	//auto view = _registry->view<Position>();
-	//std::vector<entt::entity> a;
-	//int count = 0;
-	//for (auto entity : view) {
-	//	a.push_back(entity);
-	//}
-	//_events->registerEvent(Event(Event::Type::collision, a));
 }
 
 void Systems::checkCollisions() {
 	//TODO Brandon's collision algo
-	//auto group = _registry->group<Sprite, Transform, Collider>(entt::get<entt::tag<"Player"_hs>>);
-	//auto group2 = _registry->group<Sprite, Transform, Collider>(entt::get<entt::tag<"Enemy"_hs>>);
-	//for (auto& entity1 : group) {
-	//	auto& col1 = group.get<Collider>(entity1);
-	//	auto& trans1 = group.get<Transform>(entity1);
-	//	for (auto& entity2 : group2) {
-	//		auto& col2 = group.get<Collider>(entity1);
-	//		auto& trans2 = group.get<Transform>(entity1);
-	//		if (col1.circular && col2.circular) {
-	//			glm::vec2 e1Pos = trans1.pos + glm::vec2(trans1.center.x, trans1.center.y);
-	//			glm::vec2 e2Pos = trans2.pos + glm::vec2(trans2.center.x, trans2.center.y);
-	//			if (glm::length(e1Pos - e2Pos) < col1.radius + col2.radius) {
-	//				_events->registerEvent(Event(Event::Type::collision, { entity1, entity2 }));
-	//			}
-	//		}
-	//	}
-	//}
-	_registry->group<Transform, Collider>().each(
-		[=](auto& entity1, auto & trans1, auto & col1) {
-			if (_registry->has<entt::tag<"Player"_hs>>(entity1)) {
-				_registry->group<Transform, Collider>().each(
-					[=](auto& entity2, auto & trans2, auto & col2) {
-						if (_registry->has<entt::tag<"Enemy"_hs>>(entity2)) {
-							if (col1.circular && col2.circular) {
-								glm::vec2 e1Pos = trans1.pos + glm::vec2(trans1.center.x, trans1.center.y);
-								glm::vec2 e2Pos = trans2.pos + glm::vec2(trans2.center.x, trans2.center.y);
-								if (glm::length(e1Pos - e2Pos) < col1.radius + col2.radius) {
-									std::vector<entt::entity> entities;
-									entities.push_back(entity1);
-									entities.push_back(entity2);
-									_events->registerEvent(Event(Event::Type::collision, entities));
-								}
-							}
-						}
-					});
+	auto enemies = _registry->group<entt::tag<"Enemy"_hs>>(entt::get<Transform, Collider>);
+	_registry->group<entt::tag<"Player"_hs>>(entt::get<Transform, Collider>).each(
+		[=](auto& entity1, auto tag, auto & trans1, auto & col1) {
+			for(auto enemy : enemies) {
+				auto [trans2, col2] = enemies.get<Transform, Collider>(enemy);
+				if (col1.circular) {
+					glm::vec2 e1Pos = trans1.pos + glm::vec2(trans1.center.x, trans1.center.y);
+					glm::vec2 e2Pos = trans2.pos + glm::vec2(trans2.center.x, trans2.center.y);
+					if (glm::length(e1Pos - e2Pos) < col1.radius + col2.radius) {
+						_events->registerEvent(Event(Event::Type::collision, { entity1, enemy }));
+					}
+				}
 			}
 		});
 }

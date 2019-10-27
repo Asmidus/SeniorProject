@@ -8,6 +8,7 @@
 #include <string>
 #include "Transform.h"
 #include "Velocity.h"
+#include "Sprite.h"
 #include "TextureManager.h"
 
 MainGame::MainGame() : _screenWidth(800), _screenHeight(600),
@@ -44,14 +45,13 @@ void MainGame::gameLoop() {
 		_fpsLimiter.begin();
 		_systems.updateDelta(1 / _fps);
 		_systems.checkLifetimes();
-		//processInput();
 		_systems.checkInput();
 		_systems.moveEntities();
 		_systems.checkCollisions();
 		_events.processEvents(1 / _fps);
 		drawGame();
 		//static unsigned int loop = 0;
-		//if (loop % 60 == 0) {
+		//if (loop % 200 == 0) {
 		//	loop = 0;
 		//	std::cout << _fps << " with " << _registry.size() << std::endl;
 		//} else {
@@ -89,16 +89,6 @@ void MainGame::processInput() {
 
 void MainGame::drawGame() {
 	SDL_RenderClear(_renderer);
-	//static SDL_Texture* tex1 = TextureManager::LoadTexture("media/PlayerShip.png");
-	//static SDL_Texture* tex2 = TextureManager::LoadTexture("media/Projectile.png");
-	//SDL_Rect s;
-	//s.x = 0;
-	//s.y = 0;
-	//s.w = 50;
-	//s.h = 50;
-	//TextureManager::Draw(tex1, s, s);
-	//TextureManager::Draw(tex2, s, s);
 	_systems.drawSprites();
 	SDL_RenderPresent(_renderer);
-	//_window.swapBuffer();
 }
