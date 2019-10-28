@@ -11,7 +11,7 @@
 #include "Sprite.h"
 #include "TextureManager.h"
 
-MainGame::MainGame() : _screenWidth(800), _screenHeight(800),
+MainGame::MainGame() : _screenWidth(800), _screenHeight(600),
 _gameState(GameState::PLAY), _fpsLimiter(120.0f), _fps(30.0f),
 _assets(&_registry), _events(&_registry, &_assets), _systems(&_registry, &_events, &_inputManager) {}
 
@@ -29,6 +29,7 @@ void MainGame::initSystems() {
 	//Initialize SDL
 	SDL_Init(SDL_INIT_EVERYTHING);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+	SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
 	_renderer = _window.create("ECStroids", _screenWidth, _screenHeight, 0);
 	_systems.init(_screenWidth, _screenHeight);
 	TextureManager::init(_renderer);
@@ -54,11 +55,6 @@ void MainGame::gameLoop() {
 		if (loop % 200 == 0) {
 			loop = 1;
 			std::cout << _fps << " with " << _registry.view<entt::tag<"Player"_hs>>().size() << " and " << _registry.view<entt::tag<"Enemy"_hs>>().size() << std::endl;
-			if (_registry.view<entt::tag<"Enemy"_hs>>().size() == 1) {
-				for (auto entity : _registry.view < entt::tag<"Enemy"_hs>>()) {
-					std::cout << _registry.get<Transform>(entity).pos.x << " " << _registry.get<Transform>(entity).pos.y << std::endl;
-				}
-			}
 		} else {
 			loop++;
 		}

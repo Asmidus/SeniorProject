@@ -62,7 +62,6 @@ void Systems::moveEntities() {
 					velocity.currVel = glm::vec2(0, 0);
 				}
 			}
-			bool beforeNAN = isnan(transform.pos.x);
 			//update the transform of the entity
 			transform.updatePos(velocity.currVel * 120.0f * _dt);
 			transform.angle = glm::angle(velocity.direction, glm::vec2(1, 0)) * (180 / 3.14159);
@@ -75,18 +74,16 @@ void Systems::moveEntities() {
 		});
 	_registry->view<Transform>().each(
 		[this](auto& transform) {
-			if (transform.pos.x < -transform.rect.w) {
-				transform.pos.x = _screenWidth;
-			} else if(transform.pos.x > _screenWidth) {
-				transform.pos.x = -transform.rect.w;
+			if (transform.rect.x < -transform.rect.w) {
+				transform.rect.x = _screenWidth;
+			} else if(transform.rect.x > _screenWidth) {
+				transform.rect.x = -transform.rect.w;
 			}
-			if (transform.pos.y < -transform.rect.h) {
-				transform.pos.y = _screenHeight;
-			} else if (transform.pos.y > _screenHeight) {
-				transform.pos.y = -transform.rect.h;
+			if (transform.rect.y < -transform.rect.h) {
+				transform.rect.y = _screenHeight;
+			} else if (transform.rect.y > _screenHeight) {
+				transform.rect.y = -transform.rect.h;
 			}
-			transform.rect.x = transform.pos.x;
-			transform.rect.y = transform.pos.y;
 		});
 }
 
@@ -98,8 +95,8 @@ void Systems::checkCollisions() {
 			for(auto enemy : enemies) {
 				auto [trans2, col2] = enemies.get<Transform, Collider>(enemy);
 				if (col1.circular) {
-					glm::vec2 e1Pos = trans1.pos + glm::vec2(trans1.center.x, trans1.center.y);
-					glm::vec2 e2Pos = trans2.pos + glm::vec2(trans2.center.x, trans2.center.y);
+					glm::vec2 e1Pos = glm::vec2(trans1.center.x + trans1.rect.x, trans1.center.y + trans1.rect.y);
+					glm::vec2 e2Pos = glm::vec2(trans2.center.x + trans2.rect.x, trans2.center.y + trans2.rect.y);
 					if (glm::length(e1Pos - e2Pos) < col1.radius + col2.radius) {
 						auto cooldowns1 = _registry->try_get<Cooldown>(entity1);
 						auto cooldowns2 = _registry->try_get<Cooldown>(enemy);

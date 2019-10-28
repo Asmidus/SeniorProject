@@ -85,7 +85,7 @@ entt::entity AssetManager::createAsteroid(entt::entity& parentAsteroid) {
 		yDir = rand() % 200 - 100;
 	}
 	_registry->assign<Velocity>(entity, glm::vec2(xDir, yDir), speed);
-	_registry->assign<Transform>(entity, transform.pos.x, transform.pos.y, transform.rect.w/2, transform.rect.h/2);
+	_registry->assign<Transform>(entity, transform.rect.x, transform.rect.y, transform.rect.w/2, transform.rect.h/2);
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50, glm::vec3(150, 75, 0));
 	_registry->assign<entt::tag<"Screenwrap"_hs>>(entity);
 	if (transform.rect.w > 50) {
