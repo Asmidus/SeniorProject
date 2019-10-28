@@ -171,6 +171,7 @@
     <ClInclude Include="Errors.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="EventManager.h" />
+    <ClInclude Include="Health.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="KeyListener.h" />
     <ClInclude Include="Lifetime.h" />

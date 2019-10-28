@@ -15,7 +15,7 @@ void Systems::drawSprites() {
 	updateAnimations();
 	_registry->group<Sprite, Transform>().each(
 		[](auto entity, auto& sprite, auto& transform) {
-			TextureManager::Draw(sprite.texIndex, sprite.src, transform.rect, &transform.center, transform.angle);
+			TextureManager::Draw(sprite.texIndex, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);
 		});
 }
 
@@ -62,6 +62,7 @@ void Systems::moveEntities() {
 					velocity.currVel = glm::vec2(0, 0);
 				}
 			}
+			bool beforeNAN = isnan(transform.pos.x);
 			//update the transform of the entity
 			transform.updatePos(velocity.currVel * 120.0f * _dt);
 			transform.angle = glm::angle(velocity.direction, glm::vec2(1, 0)) * (180 / 3.14159);
@@ -100,6 +101,12 @@ void Systems::checkCollisions() {
 					glm::vec2 e1Pos = trans1.pos + glm::vec2(trans1.center.x, trans1.center.y);
 					glm::vec2 e2Pos = trans2.pos + glm::vec2(trans2.center.x, trans2.center.y);
 					if (glm::length(e1Pos - e2Pos) < col1.radius + col2.radius) {
+						auto cooldowns1 = _registry->try_get<Cooldown>(entity1);
+						auto cooldowns2 = _registry->try_get<Cooldown>(enemy);
+						if (cooldowns1 && !cooldowns1->trigger(Event::Type::collision) ||
+							cooldowns2 && !cooldowns2->trigger(Event::Type::collision)) {
+							continue;
+						}
 						_events->registerEvent(Event(Event::Type::collision, { entity1, enemy }));
 					}
 				}

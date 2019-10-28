@@ -2,29 +2,28 @@
 #include "Transform.h"
 #include "TextureManager.h"
 
-class Sprite {
-public:
-	int r, g, b;
-
+struct Sprite {
 	Sprite() = default;
 
 	Sprite(const char* path) {
 		setSprite(path);
 	}
 
-	Sprite(const char* path, int w, int h) {
+	Sprite(const char* path, int w, int h, glm::vec3 color = { 255, 255, 255 }) {
 		src.w = w;
 		src.h = h;
 		src.x = src.y = 0;
+		this->color = color;
 		setSprite(path);
 	}
 
-	Sprite(const char* path, int w, int h, int nFrames, int mSpeed) {
+	Sprite(const char* path, int w, int h, int nFrames, int mSpeed, glm::vec3 color = { 255, 255, 255 }) {
 		animated = true;
 		frames = nFrames;
 		delay = mSpeed;
 		src.w = w;
 		src.h = h;
+		this->color = color;
 		setSprite(path);
 	}
 
@@ -57,7 +56,7 @@ public:
 	//	this->r = r;
 	//	this->g = g;
 	//	this->b = b;
-	//	SDL_SetTextureColorMod(texture, r, g, b);
+	//	SDL_SetTextureColorMod(, r, g, b);
 	//}
 
 	//void update() {
@@ -89,5 +88,6 @@ public:
 	int frames = 0;
 	double delay = 100;
 	SDL_Rect src, scrollDest;
+	glm::vec3 color;
 	unsigned int texIndex;
 };

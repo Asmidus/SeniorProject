@@ -28,6 +28,7 @@ private:
 	void initLevel();
 	void gameLoop();
 	void processInput();
+	void checkSpawnAsteroids();
 	void drawGame();
 	X::Window _window;
 	SDL_Renderer* _renderer;

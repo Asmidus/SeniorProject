@@ -41,6 +41,7 @@ void EventManager::processCollision(Event event) {
 			continue;
 		}
 		auto& collider = _registry->get<Collider>(collided);
+		auto health = _registry->try_get<Health>(collided);
 		if (!_registry->has<entt::tag<"Player"_hs>>(collided)) {
 			if (_registry->has<entt::tag<"Split"_hs>>(collided)) {
 				for (int i = 0; i < rand() % 2 + 2; i++) {
@@ -49,20 +50,28 @@ void EventManager::processCollision(Event event) {
 			}
 			_registry->destroy(collided);
 		} else {
+			if (health) {
+				health->current -= 1.0f;
+				if (health->current > 0) {
+					auto& sprite = _registry->get<Sprite>(collided);
+					sprite.color = { 255, 255 * health->current / health->max, 255 * health->current / health->max };
+					continue;
+				}
+			}
 			_registry->destroy(collided);
 		}
 	}
 }
 
 void EventManager::processButton(Event event) {
-	for (auto entity : event.entities()) {
-		std::string tag = _registry->get<Data>(entity).tag;
-		if (tag == "easy") {
-			//start game on easy mode
-		} else if (tag == "hard") {
-			//start game on hard mode
-		}
-	}
+	//for (auto entity : event.entities()) {
+	//	std::string tag = _registry->get<Data>(entity).tag;
+	//	if (tag == "easy") {
+	//		//start game on easy mode
+	//	} else if (tag == "hard") {
+	//		//start game on hard mode
+	//	}
+	//}
 }
 
 void EventManager::processMove(Event event) {

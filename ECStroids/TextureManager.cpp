@@ -28,6 +28,7 @@ void TextureManager::Draw(unsigned int texIndex, SDL_Rect src, SDL_Rect dest) {
 	SDL_RenderCopy(_renderer, _textures[texIndex], &src, &dest);
 }
 
-void TextureManager::Draw(unsigned int texIndex, SDL_Rect src, SDL_Rect dest, SDL_Point* center, double angle) {
+void TextureManager::Draw(unsigned int texIndex, SDL_Rect src, SDL_Rect dest, SDL_Point* center, double angle, glm::vec3 rgb) {
+	SDL_SetTextureColorMod(_textures[texIndex], rgb.r, rgb.g, rgb.b);
 	SDL_RenderCopyEx(_renderer, _textures[texIndex], &src, &dest, angle, center, SDL_FLIP_NONE);
 }

@@ -122,5 +122,8 @@
     <ClInclude Include="Collider.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="Health.h">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

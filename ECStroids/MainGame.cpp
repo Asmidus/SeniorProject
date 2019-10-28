@@ -11,7 +11,7 @@
 #include "Sprite.h"
 #include "TextureManager.h"
 
-MainGame::MainGame() : _screenWidth(800), _screenHeight(600),
+MainGame::MainGame() : _screenWidth(800), _screenHeight(800),
 _gameState(GameState::PLAY), _fpsLimiter(120.0f), _fps(30.0f),
 _assets(&_registry), _events(&_registry, &_assets), _systems(&_registry, &_events, &_inputManager) {}
 
@@ -22,7 +22,6 @@ MainGame::~MainGame() {
 void MainGame::run() {
 	initSystems();
 	_assets.createPlayer();
-	_assets.createAsteroid(300, 300);
 	gameLoop();
 }
 
@@ -49,15 +48,37 @@ void MainGame::gameLoop() {
 		_systems.moveEntities();
 		_systems.checkCollisions();
 		_events.processEvents(1 / _fps);
+		checkSpawnAsteroids();
 		drawGame();
-		//static unsigned int loop = 0;
-		//if (loop % 200 == 0) {
-		//	loop = 0;
-		//	std::cout << _fps << " with " << _registry.size() << std::endl;
-		//} else {
-		//	loop++;
-		//}
+		static unsigned int loop = 0;
+		if (loop % 200 == 0) {
+			loop = 1;
+			std::cout << _fps << " with " << _registry.view<entt::tag<"Player"_hs>>().size() << " and " << _registry.view<entt::tag<"Enemy"_hs>>().size() << std::endl;
+			if (_registry.view<entt::tag<"Enemy"_hs>>().size() == 1) {
+				for (auto entity : _registry.view < entt::tag<"Enemy"_hs>>()) {
+					std::cout << _registry.get<Transform>(entity).pos.x << " " << _registry.get<Transform>(entity).pos.y << std::endl;
+				}
+			}
+		} else {
+			loop++;
+		}
 		_fps = _fpsLimiter.end();
+	}
+}
+
+void MainGame::checkSpawnAsteroids() {
+	static unsigned int asteroidCount = 3;
+	auto view = _registry.view<entt::tag<"Enemy"_hs>>();
+	if (view.empty()) {
+		for (int i = 0; i < asteroidCount; i++) {
+			bool topSpawn = rand() % 2;
+			if (topSpawn) {
+				_assets.createAsteroid(rand() % _screenWidth, -99 + rand()%2 * (_screenHeight + 99));
+			} else {
+				_assets.createAsteroid(-99 + rand() % 2 * (_screenWidth + 99), rand() % _screenHeight);
+			}
+		}
+		asteroidCount++;
 	}
 }
 
