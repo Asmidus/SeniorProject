@@ -95,3 +95,11 @@ entt::entity AssetManager::createAsteroid(entt::entity& parentAsteroid) {
 	_registry->assign<entt::tag<"Enemy"_hs>>(entity);
 	return entity;
 }
+
+void AssetManager::clearScreen() {
+	_registry->empty();
+}
+
+void AssetManager::createMenu() {
+	//create buttons and stuff
+}
