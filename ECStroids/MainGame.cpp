@@ -1,6 +1,5 @@
 #include "MainGame.h"
 #include <iostream>
-#include "Errors.h"
 #include "InputManager.h"
 #include <string>
 #include <random>
@@ -13,7 +12,7 @@
 
 MainGame::MainGame() : _screenWidth(800), _screenHeight(600),
 _gameState(GameState::PLAY), _fpsLimiter(120.0f), _fps(30.0f),
-_assets(&_registry), _events(&_registry, &_assets), _systems(&_registry, &_events, &_inputManager) {}
+_events(&_registry), _systems(&_registry, &_events, &_inputManager) {}
 
 
 MainGame::~MainGame() {
@@ -21,7 +20,7 @@ MainGame::~MainGame() {
 
 void MainGame::run() {
 	initSystems();
-	_assets.createPlayer();
+	AssetManager::createMenu();
 	gameLoop();
 }
 
@@ -33,6 +32,7 @@ void MainGame::initSystems() {
 	_renderer = _window.create("ECStroids", _screenWidth, _screenHeight, 0);
 	_systems.init(_screenWidth, _screenHeight);
 	TextureManager::init(_renderer);
+	AssetManager::init(&_registry, &_screenWidth, &_screenHeight);
 	srand(time(0));
 }
 
@@ -48,8 +48,10 @@ void MainGame::gameLoop() {
 		_systems.checkInput();
 		_systems.moveEntities();
 		_systems.checkCollisions();
-		_events.processEvents(1 / _fps);
-		checkSpawnAsteroids();
+		if (_events.processEvents(1 / _fps)) {
+			break;
+		}
+		//checkSpawnAsteroids();
 		drawGame();
 		static unsigned int loop = 0;
 		if (loop % 200 == 0) {
@@ -67,12 +69,7 @@ void MainGame::checkSpawnAsteroids() {
 	auto view = _registry.view<entt::tag<"Enemy"_hs>>();
 	if (view.empty()) {
 		for (int i = 0; i < asteroidCount; i++) {
-			bool topSpawn = rand() % 2;
-			if (topSpawn) {
-				_assets.createAsteroid(rand() % _screenWidth, -99 + rand()%2 * (_screenHeight + 99));
-			} else {
-				_assets.createAsteroid(-99 + rand() % 2 * (_screenWidth + 99), rand() % _screenHeight);
-			}
+			AssetManager::createAsteroid();
 		}
 		asteroidCount++;
 	}

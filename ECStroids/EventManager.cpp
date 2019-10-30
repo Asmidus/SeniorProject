@@ -13,10 +13,10 @@ void EventManager::registerEvent(Event event) {
 	_events.push_back(event);
 }
 
-void EventManager::processEvents(float dt) {
+int EventManager::processEvents(float dt) {
 	_dt = dt;
 	for (auto event : _events) {
-		switch (event.type()) {
+		switch (event.type) {
 		case Event::shootBullet:
 			processShoot(event);
 			break;
@@ -24,19 +24,27 @@ void EventManager::processEvents(float dt) {
 			processCollision(event);
 			break;
 		case Event::Type::moveUp:
-		case Event::Type::moveDown:
 		case Event::Type::moveRight:
 		case Event::Type::moveLeft:
 			processMove(event);
 			break;
+		case Event::Type::startGame:
+			processStartGame(event);
+			break;
+		case Event::Type::quit:
+			if (processQuit(event)) {
+				return 1;
+			}
+			break;
 		}
 	}
 	_events.clear();
+	return 0;
 }
 
-void EventManager::processCollision(Event event) {
-	for (int i = 0; i < event.entities().size(); i++) {
-		entt::entity collided = event.entities().at(i);
+void EventManager::processCollision(Event& event) {
+	for (int i = 0; i < event.entities.size(); i++) {
+		entt::entity collided = event.entities.at(i);
 		if (!_registry->valid(collided)) {
 			continue;
 		}
@@ -45,7 +53,7 @@ void EventManager::processCollision(Event event) {
 		if (!_registry->has<entt::tag<"Player"_hs>>(collided)) {
 			if (_registry->has<entt::tag<"Split"_hs>>(collided)) {
 				for (int i = 0; i < rand() % 2 + 2; i++) {
-					_assets->createAsteroid(collided);
+					AssetManager::createAsteroid(&collided);
 				}
 			}
 			_registry->destroy(collided);
@@ -63,7 +71,7 @@ void EventManager::processCollision(Event event) {
 	}
 }
 
-void EventManager::processButton(Event event) {
+void EventManager::processButton(Event& event) {
 	//for (auto entity : event.entities()) {
 	//	std::string tag = _registry->get<Data>(entity).tag;
 	//	if (tag == "easy") {
@@ -74,29 +82,22 @@ void EventManager::processButton(Event event) {
 	//}
 }
 
-void EventManager::processMove(Event event) {
-	for (auto entity : event.entities()) {
+void EventManager::processMove(Event& event) {
+	for (auto entity : event.entities) {
 		auto& entityVel = _registry->get<Velocity>(entity);
 		auto animation = _registry->try_get<Animation>(entity);
 		auto& direction = entityVel.direction;
-		switch (event.type()) {
+		switch (event.type) {
 		case Event::moveUp:
-			//direction.y += 1;
 			if (animation) {
 				animation->active = true;
 			}
 			entityVel.currAccel = entityVel.accel;
 			break;
-		case Event::moveDown:
-			//The player can't move backwards
-			//direction.y -= 1;
-			break;
 		case Event::moveRight:
 			direction = glm::rotate<float>(direction, 6*_dt);
-			//direction.x += 1;
 			break;
 		case Event::moveLeft:
-			//direction.x -= 1;
 			direction = glm::rotate<float>(direction, -6*_dt);
 			break;
 		}
@@ -104,8 +105,30 @@ void EventManager::processMove(Event event) {
 	}
 }
 
-void EventManager::processShoot(Event event) {
-	auto bullet = _assets->createBullet(event.entities()[0]);
-	//_registry->get<Transform>(bullet).pos = _registry->get<Transform>(event.entities()[0]).pos;
-	//_registry->get<Velocity>(bullet).direction = _registry->get<Velocity>(event.entities()[0]).direction;
+void EventManager::processShoot(Event& event) {
+	auto bullet = AssetManager::createBullet(event.entities[0]);
+}
+
+void EventManager::processStartGame(Event& event) {
+	if (!event.entities.empty()) {
+		auto rect = _registry->get<Transform>(event.entities[0]).rect;
+		auto pos = event.mousePos;
+		if (pos.x < rect.x || pos.x > rect.x + rect.w ||
+			pos.y < rect.y || pos.y > rect.y + rect.h) {
+			return;
+		}
+	}
+	AssetManager::clearScreen();
+}
+
+int EventManager::processQuit(Event& event) {
+	if (!event.entities.empty()) {
+		auto rect = _registry->get<Transform>(event.entities[0]).rect;
+		auto pos = event.mousePos;
+		if (pos.x < rect.x || pos.x > rect.x + rect.w ||
+			pos.y < rect.y || pos.y > rect.y + rect.h) {
+			return 0;
+		}
+	}
+	return 1;
 }

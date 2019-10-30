@@ -181,7 +181,7 @@ void Systems::checkInput() {
 				if (cooldowns && !cooldowns->trigger(eventType)) {
 					continue;
 				}
-				_events->registerEvent(Event(eventType, entity));
+				_events->registerEvent(Event(eventType, entity, _inputs->getMouseCoords()));
 			}
 		}
 	}

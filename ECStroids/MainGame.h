@@ -22,6 +22,7 @@ public:
 	~MainGame();
 
 	void run();
+	void quitQame() { _gameState = GameState::EXIT; }
 
 private:
 	void initSystems();
@@ -30,15 +31,14 @@ private:
 	void processInput();
 	void checkSpawnAsteroids();
 	void drawGame();
-	X::Window _window;
+	Window _window;
 	SDL_Renderer* _renderer;
-	int _screenWidth;
-	int _screenHeight;
+	unsigned int _screenWidth;
+	unsigned int _screenHeight;
 	GameState _gameState;
 	InputManager _inputManager;
 	FPSLimiter _fpsLimiter;
 	entt::registry _registry;
-	AssetManager _assets;
 	EventManager _events;
 	Systems _systems;
 

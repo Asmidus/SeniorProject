@@ -149,8 +149,6 @@
   <ItemGroup>
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Audio.cpp" />
-    <ClCompile Include="Errors.cpp" />
-    <ClCompile Include="Event.cpp" />
     <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -167,7 +165,6 @@
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Components.h" />
     <ClInclude Include="Cooldown.h" />
-    <ClInclude Include="Errors.h" />
     <ClInclude Include="Event.h" />
     <ClInclude Include="EventManager.h" />
     <ClInclude Include="Health.h" />

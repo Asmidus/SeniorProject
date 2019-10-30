@@ -1,35 +1,29 @@
 #pragma once
 #include "entt/entt.hpp"
+#include <glm/glm.hpp>
 
 //Events are essentially actions that are triggered from something.
 //They can occur when two objects collide or when the user presses a button
-class Event {
+struct Event {
 public:
 	enum Type {
 		collision,
 		button,
 		moveUp,
-		moveDown,
 		moveRight,
 		moveLeft,
-		shootBullet
+		shootBullet,
+		startGame,
+		quit
 	};
-	Event();
-	Event(const Type& type, const std::vector<entt::entity> entities) {
-		_type = type;
-		_entities = entities;
-	}
-	Event(const Type& type, const entt::entity& entity) {
-		_type = type;
-		_entities = { entity };
-	}
-	~Event();
 
-	Type type() { return _type; }
-	std::vector<entt::entity> entities() { return _entities; }
-private:
+	Event(const Type& type, const std::vector<entt::entity>& entities, const glm::vec2& mp = { 0, 0 }) : type(type), entities(entities), mousePos(mp) {}
+	Event(const Type& type, const entt::entity& entity, const glm::vec2& mp = { 0, 0 }) : type(type), entities({ entity }), mousePos(mp) {}
+
 	//the list of entities effected by the event
-	std::vector<entt::entity> _entities;
+	std::vector<entt::entity> entities;
 	//the type of event
-	Type _type;
+	Type type;
+	//the position the event was sent from if applicable
+	glm::vec2 mousePos;
 };

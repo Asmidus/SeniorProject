@@ -1,17 +1,13 @@
 #pragma once
 #include "entt/entt.hpp"
-class AssetManager
-{
-public:
-	AssetManager(entt::registry* registry) : _registry(registry) {}
-	~AssetManager();
+#include "Event.h"
 
+namespace AssetManager {
+	void init(entt::registry* r, unsigned int* w, unsigned int* h);
 	entt::entity createPlayer();
 	entt::entity createBullet(entt::entity& shooter, bool tracking = false);
-	entt::entity createAsteroid(float x, float y);
-	entt::entity createAsteroid(entt::entity& parentAsteroid);
+	entt::entity createAsteroid(entt::entity* parentAsteroid = nullptr);
+	entt::entity createButton(Event::Type type);
 	void clearScreen();
 	void createMenu();
-private:
-	entt::registry* _registry;
-};
+}
