@@ -27,8 +27,9 @@ void MainGame::run() {
 void MainGame::initSystems() {
 	//Initialize SDL
 	SDL_Init(SDL_INIT_EVERYTHING);
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+	//SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 	SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
+	TTF_Init();
 	_renderer = _window.create("ECStroids", _screenWidth, _screenHeight, 0);
 	_systems.init(_screenWidth, _screenHeight);
 	TextureManager::init(_renderer);
@@ -45,13 +46,13 @@ void MainGame::gameLoop() {
 		_fpsLimiter.begin();
 		_systems.updateDelta(1 / _fps);
 		_systems.checkLifetimes();
+		_systems.spawnAsteroids();
 		_systems.checkInput();
 		_systems.moveEntities();
 		_systems.checkCollisions();
 		if (_events.processEvents(1 / _fps)) {
 			break;
 		}
-		//checkSpawnAsteroids();
 		drawGame();
 		static unsigned int loop = 0;
 		if (loop % 200 == 0) {
@@ -61,17 +62,6 @@ void MainGame::gameLoop() {
 			loop++;
 		}
 		_fps = _fpsLimiter.end();
-	}
-}
-
-void MainGame::checkSpawnAsteroids() {
-	static unsigned int asteroidCount = 3;
-	auto view = _registry.view<entt::tag<"Enemy"_hs>>();
-	if (view.empty()) {
-		for (int i = 0; i < asteroidCount; i++) {
-			AssetManager::createAsteroid();
-		}
-		asteroidCount++;
 	}
 }
 

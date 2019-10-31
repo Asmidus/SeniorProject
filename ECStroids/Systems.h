@@ -17,6 +17,7 @@ public:
 	void checkCollisions();
 	void checkInput();
 	void checkLifetimes();
+	void spawnAsteroids();
 private:
 	float _dt;
 	float _screenWidth, _screenHeight;

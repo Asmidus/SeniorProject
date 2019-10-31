@@ -9,3 +9,5 @@
 #include "Lifetime.h"
 #include "Collider.h"
 #include "Health.h"
+#include "Text.h"
+#include "AsteroidSpawner.h"

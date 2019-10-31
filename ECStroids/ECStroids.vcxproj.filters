@@ -113,5 +113,11 @@
     <ClInclude Include="Health.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="Text.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="AsteroidSpawner.h">
+      <Filter>Components</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

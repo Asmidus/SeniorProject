@@ -29,7 +29,6 @@ private:
 	void initLevel();
 	void gameLoop();
 	void processInput();
-	void checkSpawnAsteroids();
 	void drawGame();
 	Window _window;
 	SDL_Renderer* _renderer;
@@ -44,5 +43,4 @@ private:
 
 	float _fps;
 	float _frameTime;
-	float _maxFPS;
 };

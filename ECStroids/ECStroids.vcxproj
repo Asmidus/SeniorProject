@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="AssetManager.h" />
+    <ClInclude Include="AsteroidSpawner.h" />
     <ClInclude Include="Audio.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Components.h" />
@@ -173,6 +174,7 @@
     <ClInclude Include="Lifetime.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="MouseListener.h" />
+    <ClInclude Include="Text.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="Systems.h" />

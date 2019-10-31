@@ -65,6 +65,9 @@ void EventManager::processCollision(Event& event) {
 					sprite.color = { 255, 255 * health->current / health->max, 255 * health->current / health->max };
 					continue;
 				}
+				AssetManager::clearScreen();
+				AssetManager::createMenu();
+				return;
 			}
 			_registry->destroy(collided);
 		}
@@ -119,6 +122,8 @@ void EventManager::processStartGame(Event& event) {
 		}
 	}
 	AssetManager::clearScreen();
+	AssetManager::createPlayer();
+	AssetManager::createAsteroidSpawner();
 }
 
 int EventManager::processQuit(Event& event) {

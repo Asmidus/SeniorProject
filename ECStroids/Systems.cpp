@@ -14,8 +14,18 @@
 void Systems::drawSprites() {
 	updateAnimations();
 	_registry->group<Sprite, Transform>().each(
-		[](auto entity, auto& sprite, auto& transform) {
+		[this](auto entity, auto& sprite, auto& transform) {
 			TextureManager::Draw(sprite.texIndex, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);
+			auto text = _registry->try_get<Text>(entity);
+			if (text) {
+				text->dest.x = transform.rect.x + text->offset.x;
+				text->dest.y = transform.rect.y + text->offset.y;
+				TextureManager::DrawText(text->texture, text->dest);
+			}
+		});
+	_registry->group<>(entt::get<Text>, entt::exclude<Transform>).each(
+		[this](auto entity, auto& text) {
+			TextureManager::DrawText(text.texture, text.dest);
 		});
 }
 
@@ -72,38 +82,7 @@ void Systems::moveEntities() {
 		}
 		//reset the current acceleration
 		velocity.currAccel = 0;
-				  });
-	//_registry->group<Sprite, Transform, Velocity>().each(
-	//	[this](auto entity, auto & sprite, auto& transform, auto& velocity) {
-	//		if (!velocity.constant) {
-	//			glm::vec2 deltaVel = glm::vec2(0, 0);
-	//			//if the entity is trying to accelerate in its given direction, apply that acceleration
-	//			if (velocity.currAccel != 0) {
-	//				deltaVel = glm::normalize(velocity.direction) * (velocity.currAccel);
-	//				//if the entity is not trying to accelerate, decelerate it by its deceleration amount
-	//			} else if (velocity.decel && glm::length(velocity.currVel) > 0) {
-	//				deltaVel = glm::normalize(velocity.currVel) * -(velocity.decel);
-	//			}
-	//			//apply the change in velocity
-	//			velocity.currVel += (deltaVel * _dt);
-	//			//if the entity's net speed is faster than the max, cap it
-	//			if (glm::length(velocity.currVel) > velocity.maxSpeed) {
-	//				velocity.currVel = glm::normalize(velocity.currVel) * velocity.maxSpeed;
-	//				//if the entity's net speed is essentially zero, reset the current velocity vector
-	//			} else if (glm::length(velocity.currVel) < 0.01) {
-	//				velocity.currVel = glm::vec2(0, 0);
-	//			}
-	//		}
-	//		//update the transform of the entity
-	//		transform.updatePos(velocity.currVel * 120.0f * _dt);
-	//		transform.angle = glm::angle(velocity.direction, glm::vec2(1, 0)) * (180 / 3.14159);
-	//		//make sure we can get angles larger than 180 degrees
-	//		if (velocity.direction.y < 0) {
-	//			transform.angle = 360 - transform.angle;
-	//		}
-	//		//reset the current acceleration
-	//		velocity.currAccel = 0;
-	//	});
+	});
 	_registry->view<Transform>().each(
 		[this](auto& transform) {
 			if (transform.rect.x < -transform.rect.w) {
@@ -123,6 +102,10 @@ void Systems::checkCollisions() {
 	//TODO Brandon's collision algo
 	std::shared_ptr<std::mutex> m = std::make_shared<std::mutex>();
 	auto enemies = _registry->group<entt::tag<"Enemy"_hs>>(entt::get<Transform, Collider>);
+	auto group = _registry->view<entt::tag<"Player"_hs>, Transform, Collider>();
+	for (entt::entity entity : group) {
+		Collider& collider = _registry->get<Collider>(entity);
+	}
 	_registry->group<entt::tag<"Player"_hs>>(entt::get<Transform, Collider>).each(
 		[=](auto& entity1, auto tag1, auto & trans1, auto & col1) {
 			std::for_each(std::execution::par_unseq, enemies.begin(), enemies.end(), [=](auto entity2) {
@@ -206,6 +189,18 @@ void Systems::checkLifetimes() {
 			lifetime.timeLeft -= _dt;
 			if (lifetime.timeLeft <= 0) {
 				_registry->destroy(entity);
+			}
+		});
+}
+
+void Systems::spawnAsteroids() {
+	_registry->view<AsteroidSpawner>().each(
+		[this](auto& entity, auto& spawner) {
+			if (_registry->view<entt::tag<"Enemy"_hs>>().empty()) {
+				for (int i = 0; i < spawner.numAsteroids; i++) {
+					AssetManager::createAsteroid(spawner.speedRange, spawner.sizeRange);
+				}
+				spawner.numAsteroids += spawner.increment;
 			}
 		});
 }
