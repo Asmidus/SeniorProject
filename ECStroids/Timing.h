@@ -1,4 +1,4 @@
-
+#include <chrono>
 class FPSLimiter {
 public:
 	FPSLimiter(float maxFPS);
@@ -11,5 +11,5 @@ private:
 	float _fps;
 	float _maxFPS;
 	float _frameTime;
-	unsigned int _startTicks;
+	std::chrono::steady_clock::time_point _start;
 };

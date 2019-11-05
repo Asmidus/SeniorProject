@@ -18,6 +18,7 @@ public:
 
 	SDL_Renderer* create(std::string windowName, int screenWidth, int screenHeight, unsigned int currentFlags);
 	void swapBuffer();
+	SDL_Window* get() { return _sdlWindow; }
 	int getScreenWidth() { return _screenWidth; }
 	int getScreenHeight() { return _screenHeight; }
 private:

@@ -37,7 +37,6 @@ entt::entity AssetManager::createPlayer() {
 	_registry->assign<Cooldown>(entity, cooldowns);
 	_registry->assign<Animation>(entity, 5, 0.08, true);
 	_registry->assign<Health>(entity, 5.0f);
-	_registry->assign<entt::tag<"Screenwrap"_hs>>(entity);
 	_registry->assign<Collider>(entity, shipSize/3);
 	_registry->assign<entt::tag<"Player"_hs>>(entity);
 	return entity;
@@ -88,7 +87,6 @@ entt::entity AssetManager::createAsteroid(glm::vec2 speedRange, glm::vec2 sizeRa
 	_registry->assign<entt::tag<"Split"_hs>>(entity);
 	_registry->assign<Collider>(entity, size / 2);
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50, glm::vec3(150, 75, 0));
-	_registry->assign<entt::tag<"Screenwrap"_hs>>(entity);
 	_registry->assign<entt::tag<"Enemy"_hs>>(entity);
 	return entity;
 }
@@ -109,7 +107,6 @@ entt::entity AssetManager::createAsteroid(entt::entity* parentAsteroid) {
 	}
 	_registry->assign<Collider>(entity, _registry->get<Collider>(*parentAsteroid).radius/2);
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50, glm::vec3(150, 75, 0));
-	_registry->assign<entt::tag<"Screenwrap"_hs>>(entity);
 	_registry->assign<entt::tag<"Enemy"_hs>>(entity);
 	return entity;
 }

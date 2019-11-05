@@ -74,17 +74,6 @@ void EventManager::processCollision(Event& event) {
 	}
 }
 
-void EventManager::processButton(Event& event) {
-	//for (auto entity : event.entities()) {
-	//	std::string tag = _registry->get<Data>(entity).tag;
-	//	if (tag == "easy") {
-	//		//start game on easy mode
-	//	} else if (tag == "hard") {
-	//		//start game on hard mode
-	//	}
-	//}
-}
-
 void EventManager::processMove(Event& event) {
 	for (auto entity : event.entities) {
 		auto& entityVel = _registry->get<Velocity>(entity);

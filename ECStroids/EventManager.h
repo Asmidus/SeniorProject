@@ -17,7 +17,6 @@ public:
 
 	//These functions each process a specific type of event
 	void processCollision(Event& event);
-	void processButton(Event& event);
 	void processMove(Event& event);
 	void processShoot(Event& event);
 	void processStartGame(Event& event);
