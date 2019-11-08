@@ -15,18 +15,18 @@ void Systems::drawSprites() {
 	updateAnimations();
 	_registry->group<Sprite, Transform>().each(
 		[this](auto entity, auto& sprite, auto& transform) {
-			TextureManager::Draw(sprite.texIndex, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);
-			auto text = _registry->try_get<Text>(entity);
-			if (text) {
-				text->dest.x = transform.rect.x + text->offset.x;
-				text->dest.y = transform.rect.y + text->offset.y;
-				TextureManager::DrawText(text->texture, text->dest);
-			}
+			TextureManager::Draw(sprite.texture, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);
+			//auto text = _registry->try_get<Text>(entity);
+			//if (text) {
+			//	text->dest.x = transform.rect.x + text->offset.x;
+			//	text->dest.y = transform.rect.y + text->offset.y;
+			//	TextureManager::DrawText(text->texture, text->dest);
+			//}
 		});
-	_registry->group<>(entt::get<Text>, entt::exclude<Transform>).each(
-		[this](auto entity, auto& text) {
-			TextureManager::DrawText(text.texture, text.dest);
-		});
+	//_registry->group<>(entt::get<Text>, entt::exclude<Transform>).each(
+	//	[this](auto entity, auto& text) {
+	//		TextureManager::DrawText(text.texture, text.dest);
+	//	});
 }
 
 void Systems::updateAnimations() {

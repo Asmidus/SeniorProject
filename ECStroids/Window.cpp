@@ -1,4 +1,5 @@
 #include "Window.h"
+#include <GL/glew.h>
 
 
 
@@ -7,7 +8,7 @@ Window::Window() {}
 
 Window::~Window() {}
 
-SDL_Renderer* Window::create(std::string windowName, int screenWidth, int screenHeight, unsigned int currentFlags) {
+void Window::create(std::string windowName, int screenWidth, int screenHeight, unsigned int currentFlags) {
 	Uint32 flags = SDL_WINDOW_OPENGL;
 	if (currentFlags & INVISIBLE) {
 		flags |= SDL_WINDOW_HIDDEN;
@@ -18,17 +19,20 @@ SDL_Renderer* Window::create(std::string windowName, int screenWidth, int screen
 	if (currentFlags & BORDERLESS) {
 		flags |= SDL_WINDOW_BORDERLESS;
 	}
-	_sdlWindow = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenWidth, screenHeight, flags);
-	if (_sdlWindow == nullptr) {
-		//fatalError("Window could not be created");
-		return nullptr;
+	if (currentFlags & VSYNC) {
+		SDL_GL_SetSwapInterval(0);
 	}
-	SDL_Renderer* renderer = SDL_CreateRenderer(_sdlWindow, -1, SDL_RENDERER_ACCELERATED);
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-	return renderer;
+	_window = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screenWidth, screenHeight, flags);
+	if (_window == nullptr) throw;
+	if (!SDL_GL_CreateContext(_window)) throw;
+	if (glewInit() != GLEW_OK) throw;
+	std::printf("Running OpenGL Version: %s\n", glGetString(GL_VERSION));
+	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+	// Enable alpha blend
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void Window::swapBuffer() {
-	// SDL_GL_SwapWindow(_sdlWindow);
+	 SDL_GL_SwapWindow(_window);
 }

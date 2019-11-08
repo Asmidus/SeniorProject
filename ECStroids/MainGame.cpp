@@ -20,7 +20,7 @@ MainGame::~MainGame() {
 
 void MainGame::run() {
 	initSystems();
-	AssetManager::createMenu();
+	AssetManager::createPlayer();
 	gameLoop();
 }
 
@@ -30,9 +30,19 @@ void MainGame::initSystems() {
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 	SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
 	TTF_Init();
-	_renderer = _window.create("ECStroids", _screenWidth, _screenHeight, 0);
+	_window.create("ECStroids", _screenWidth, _screenHeight, 0);
+	//glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
 	_systems.init(_screenWidth, _screenHeight);
-	TextureManager::init(_renderer);
+
+	//Shaders
+	_program.compileShaders("Shaders/textureShading.vert", "Shaders/textureShading.frag");
+	_program.addAttribute("vertexPosition");
+	_program.addAttribute("vertexColor");
+	_program.addAttribute("vertexUV");
+	_program.link();
+	_program.use();
+
+	TextureManager::init(_program.getUniformLocation("mySampler"));
 	AssetManager::init(&_registry, &_screenWidth, &_screenHeight);
 	srand(time(0));
 }
@@ -53,6 +63,7 @@ void MainGame::gameLoop() {
 			break;
 		}
 		drawGame();
+		_window.swapBuffer();
 		_systems.checkCollisions();
 		static unsigned int loop = 0;
 		if (loop % int(_fps) == 0) {
@@ -93,7 +104,11 @@ void MainGame::processInput() {
 }
 
 void MainGame::drawGame() {
-	SDL_RenderClear(_renderer);
+	// Set the base depth to 1.0
+	glClearDepth(1.0);
+	// Clear the color and depth buffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//SDL_RenderClear(_renderer);
 	_systems.drawSprites();
-	SDL_RenderPresent(_renderer);
+	//SDL_RenderPresent(_renderer);
 }

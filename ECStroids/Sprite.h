@@ -40,7 +40,7 @@ struct Sprite {
 	//}
 
 	void setSprite(const char* path) {
-		texIndex = TextureManager::LoadTexture(path);
+		texture = TextureManager::LoadTexture(path);
 	}
 
 	//void setColor(int r, int g, int b) {
@@ -89,5 +89,5 @@ struct Sprite {
 	double delay = 100;
 	SDL_Rect src, scrollDest;
 	glm::vec3 color;
-	unsigned int texIndex;
+	unsigned int texture;
 };

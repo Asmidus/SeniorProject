@@ -2,14 +2,15 @@
 #include <SDL/SDL.h>
 #include <GL/glew.h>
 #include <vector>
+#include <list>
 #include "InputManager.h"
 #include "Timing.h"
 #include "Window.h"
 #include "entt/entt.hpp"
-#include <list>
 #include "AssetManager.h"
 #include "EventManager.h"
 #include "Systems.h"
+#include "Program.h"
 
 enum class GameState {
 	PLAY,
@@ -31,6 +32,7 @@ private:
 	void processInput();
 	void drawGame();
 	Window _window;
+	Program _program;
 	SDL_Renderer* _renderer;
 	unsigned int _screenWidth;
 	unsigned int _screenHeight;
