@@ -4,6 +4,7 @@
 #include "InputManager.h"
 
 class EventManager;
+class SpriteBatch;
 class Systems
 {
 public:
@@ -11,7 +12,7 @@ public:
 	~Systems() {}
 	void init(float screenWidth, float screenHeight) { _screenWidth = screenWidth; _screenHeight = screenHeight; }
 	void updateDelta(float dt) { _dt = dt; }
-	void drawSprites();
+	void drawSprites(SpriteBatch* batch);
 	void updateAnimations();
 	void moveEntities();
 	void checkCollisions();

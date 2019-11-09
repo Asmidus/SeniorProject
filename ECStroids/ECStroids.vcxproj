@@ -149,12 +149,14 @@
   <ItemGroup>
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainGame.cpp" />
     <ClCompile Include="Program.cpp" />
+    <ClCompile Include="SpriteBatch.cpp" />
     <ClCompile Include="Systems.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Timing.cpp" />
@@ -166,6 +168,7 @@
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="AsteroidSpawner.h" />
     <ClInclude Include="Audio.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Components.h" />
     <ClInclude Include="Cooldown.h" />
@@ -179,6 +182,7 @@
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="MouseListener.h" />
     <ClInclude Include="Program.h" />
+    <ClInclude Include="SpriteBatch.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Sprite.h" />

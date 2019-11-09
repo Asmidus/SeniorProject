@@ -11,6 +11,8 @@
 #include "EventManager.h"
 #include "Systems.h"
 #include "Program.h"
+#include "Camera.h"
+#include "SpriteBatch.h"
 
 enum class GameState {
 	PLAY,
@@ -33,6 +35,7 @@ private:
 	void drawGame();
 	Window _window;
 	Program _program;
+	Camera _camera;
 	SDL_Renderer* _renderer;
 	unsigned int _screenWidth;
 	unsigned int _screenHeight;
@@ -42,6 +45,7 @@ private:
 	entt::registry _registry;
 	EventManager _events;
 	Systems _systems;
+	SpriteBatch _batch;
 
 	float _fps;
 	float _frameTime;

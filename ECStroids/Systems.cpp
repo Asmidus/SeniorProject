@@ -10,12 +10,21 @@
 #include <glm/gtx/vector_angle.hpp>
 #include <algorithm>
 #include <execution>
+#include "SpriteBatch.h"
 
-void Systems::drawSprites() {
+void Systems::drawSprites(SpriteBatch* batch) {
 	updateAnimations();
+	batch->begin();
 	_registry->group<Sprite, Transform>().each(
-		[this](auto entity, auto& sprite, auto& transform) {
-			TextureManager::Draw(sprite.texture, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);
+		[batch](auto entity, auto& sprite, auto& transform) {
+			//TextureManager::Draw(sprite.texture, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);
+			glm::vec4 t = glm::vec4(transform.rect.x, transform.rect.y, transform.rect.w, transform.rect.h);
+			glm::vec4 u = sprite.getUV();
+			if (transform.angle) {
+				batch->draw(t, u, sprite.texture, 0, sprite.color, transform.angle);
+			} else {
+				batch->draw(t, u, sprite.texture, 0, sprite.color);
+			}
 			//auto text = _registry->try_get<Text>(entity);
 			//if (text) {
 			//	text->dest.x = transform.rect.x + text->offset.x;
@@ -23,6 +32,8 @@ void Systems::drawSprites() {
 			//	TextureManager::DrawText(text->texture, text->dest);
 			//}
 		});
+	batch->end();
+	batch->renderBatch();
 	//_registry->group<>(entt::get<Text>, entt::exclude<Transform>).each(
 	//	[this](auto entity, auto& text) {
 	//		TextureManager::DrawText(text.texture, text.dest);
@@ -69,19 +80,14 @@ void Systems::moveEntities() {
 			if (glm::length(velocity.currVel) > velocity.maxSpeed) {
 				velocity.currVel = glm::normalize(velocity.currVel) * velocity.maxSpeed;
 				//if the entity's net speed is essentially zero, reset the current velocity vector
-			} else if (glm::length(velocity.currVel) < 0.01) {
+			} else if (velocity.currAccel == 0 && glm::length(velocity.currVel) < 0.01) {
 				velocity.currVel = glm::vec2(0, 0);
 			}
+			//reset the current acceleration
+			velocity.currAccel = 0;
 		}
 		//update the transform of the entity
 		transform.updatePos(velocity.currVel * 120.0f * _dt);
-		transform.angle = glm::angle(velocity.direction, glm::vec2(1, 0)) * (180 / 3.14159);
-		//make sure we can get angles larger than 180 degrees
-		if (velocity.direction.y < 0) {
-			transform.angle = 360 - transform.angle;
-		}
-		//reset the current acceleration
-		velocity.currAccel = 0;
 	});
 	_registry->view<Transform>().each(
 		[this](auto& transform) {

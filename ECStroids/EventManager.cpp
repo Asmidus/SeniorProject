@@ -4,6 +4,7 @@
 #include "entt/entt.hpp"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/vector_angle.hpp>
 
 
 
@@ -62,7 +63,7 @@ void EventManager::processCollision(Event& event) {
 				health->current -= 1.0f;
 				if (health->current > 0) {
 					auto& sprite = _registry->get<Sprite>(collided);
-					sprite.color = { 255, 255 * health->current / health->max, 255 * health->current / health->max };
+					sprite.color = { 255, GLubyte(255 * health->current / health->max), GLubyte(255 * health->current / health->max), 255 };
 					continue;
 				}
 				AssetManager::clearScreen();
@@ -79,6 +80,7 @@ void EventManager::processMove(Event& event) {
 		auto& entityVel = _registry->get<Velocity>(entity);
 		auto animation = _registry->try_get<Animation>(entity);
 		auto& direction = entityVel.direction;
+		auto& transform = _registry->get<Transform>(entity);
 		switch (event.type) {
 		case Event::moveUp:
 			if (animation) {
@@ -93,7 +95,10 @@ void EventManager::processMove(Event& event) {
 			direction = glm::rotate<float>(direction, -6*_dt);
 			break;
 		}
-		glm::normalize(entityVel.direction);
+		glm::normalize(direction);
+		transform.angle = glm::angle(direction, glm::vec2(1, 0));
+		//make sure we can get angles larger than 180 degrees
+		if (direction.y < 0) transform.angle *= -1;
 	}
 }
 

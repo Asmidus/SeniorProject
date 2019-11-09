@@ -1,6 +1,7 @@
 #pragma once
 #include "Transform.h"
 #include "TextureManager.h"
+#include "Vertex.h"
 
 struct Sprite {
 	Sprite() = default;
@@ -17,30 +18,15 @@ struct Sprite {
 		setSprite(path);
 	}
 
-	Sprite(const char* path, int w, int h, int nFrames, int mSpeed, glm::vec3 color = { 255, 255, 255 }) {
-		animated = true;
-		frames = nFrames;
-		delay = mSpeed;
-		src.w = w;
-		src.h = h;
-		this->color = color;
-		setSprite(path);
+	void setSprite(const char* path) {
+		auto [tex, w, h] = TextureManager::LoadTexture(path);
+		texture = tex;
+		size.x = w;
+		size.y = h;
 	}
 
-	//Sprite(MainGame* game, const char* path, int w, int h, double speed) {
-	//	scrolling = true;
-	//	delay = game->width/(1920/speed);
-	//	src.w = w;
-	//	src.h = h;
-	//	setSprite(path);
-	//}
-
-	//~Sprite() {
-	//	SDL_DestroyTexture(texture);
-	//}
-
-	void setSprite(const char* path) {
-		texture = TextureManager::LoadTexture(path);
+	glm::vec4 getUV() {
+		return glm::vec4(src.x / float(size.x), src.y / float(size.y), src.w / float(size.x), src.h / float(size.y));
 	}
 
 	//void setColor(int r, int g, int b) {
@@ -82,12 +68,9 @@ struct Sprite {
 	//	}
 	//}
 
-	bool animated = false;
-	bool scrolling = false;
 	float angle = 0.0f;
-	int frames = 0;
-	double delay = 100;
 	SDL_Rect src, scrollDest;
-	glm::vec3 color;
+	glm::ivec2 size;
+	Color color;
 	unsigned int texture;
 };

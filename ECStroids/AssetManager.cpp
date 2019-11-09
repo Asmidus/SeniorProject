@@ -47,7 +47,7 @@ entt::entity AssetManager::createBullet(entt::entity& shooter, bool tracking) {
 	auto& shooterTransform = _registry->get<Transform>(shooter);
 	static unsigned int bulletSize = 12.5;
 	glm::vec2 point = glm::vec2(shooterTransform.rect.w, shooterTransform.rect.h/2);
-	float angle = (shooterTransform.angle) * (3.14159 / 180); // Convert to radians
+	float angle = shooterTransform.angle;
 	auto center = shooterTransform.center;
 	float rotatedX = cos(angle) * (point.x - center.x) - sin(angle) * (point.y - center.y) + center.x + shooterTransform.rect.x - bulletSize/2;
 	float rotatedY = sin(angle) * (point.x - center.x) + cos(angle) * (point.y - center.y) + center.y + shooterTransform.rect.y - bulletSize/2;
@@ -82,10 +82,10 @@ entt::entity AssetManager::createAsteroid(glm::vec2 speedRange, glm::vec2 sizeRa
 	}
 	float speed = speedRange.x + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (speedRange.y - speedRange.x)));
 	float size = sizeRange.x + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (sizeRange.y - sizeRange.x)));
-	_registry->assign<Velocity>(entity, glm::vec2(xDir, yDir), speed);
-	_registry->assign<Transform>(entity, x, y, size, size);
+	//_registry->assign<Velocity>(entity, glm::vec2(xDir, yDir), speed);
+	_registry->assign<Transform>(entity, 500, 300, size, size);
 	_registry->assign<entt::tag<"Split"_hs>>(entity);
-	_registry->assign<Collider>(entity, size / 2);
+	//_registry->assign<Collider>(entity, size / 2);
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50, glm::vec3(150, 75, 0));
 	_registry->assign<entt::tag<"Enemy"_hs>>(entity);
 	return entity;
@@ -118,13 +118,13 @@ entt::entity AssetManager::createButton(Event::Type type, const char* text) {
 	_registry->assign<Sprite>(entity, "media/Button.png", 160, 100, glm::vec3(255, 100, 100));
 	_registry->assign<Transform>(entity, 0, 0, 160, 100);
 	_registry->assign<MouseListener>(entity, mouseMap);
-	_registry->assign<Text>(entity, text, 160, 100, 24, SDL_Color({ 25, 25, 25, 255 }));
+	//_registry->assign<Text>(entity, text, 160, 100, 24, SDL_Color({ 25, 25, 25, 255 }));
 	return entity;
 }
 
 entt::entity AssetManager::createAsteroidSpawner() {
 	auto entity = _registry->create();
-	_registry->assign<AsteroidSpawner>(entity, 3, 2, glm::vec2(0.25, 1), glm::vec2(75, 150));
+	_registry->assign<AsteroidSpawner>(entity, 100000, 2, glm::vec2(0.25, 1), glm::vec2(75, 150));
 	return entity;
 }
 
