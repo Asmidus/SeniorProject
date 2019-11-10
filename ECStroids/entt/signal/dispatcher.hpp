@@ -90,7 +90,7 @@ class dispatcher {
         if constexpr(is_named_type_v<Event>) {
             return named_type_traits_v<Event>;
         } else {
-            return event_family::type<Event>;
+            return event_family::type<std::decay_t<Event>>;
         }
     }
 
@@ -108,15 +108,12 @@ class dispatcher {
         } else {
             if(!(wtype < wrappers.size())) {
                 wrappers.resize(wtype+1);
+            } else if(wrappers[wtype].wrapper && wrappers[wtype].runtime_type != wtype) {
+                wrappers.emplace_back();
+                std::swap(wrappers[wtype], wrappers.back());
             }
 
             wdata = &wrappers[wtype];
-
-            if(wdata->wrapper && wdata->runtime_type != wtype) {
-                wrappers.emplace_back();
-                std::swap(wrappers[wtype], wrappers.back());
-                wdata = &wrappers[wtype];
-            }
         }
 
         if(!wdata->wrapper) {
