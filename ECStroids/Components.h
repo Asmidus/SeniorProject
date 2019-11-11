@@ -11,3 +11,4 @@
 #include "Health.h"
 #include "Text.h"
 #include "AsteroidSpawner.h"
+#include "Light.h"

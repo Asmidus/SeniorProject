@@ -16,7 +16,7 @@ void FPSLimiter::begin() {
 float FPSLimiter::end() {
 	calculateFPS();
 	while (1000000.0f / _maxFPS > std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - _start).count()) {}
-	return _fps < 0.003 ? 10 : _fps;
+	return _fps == 0 ? 0.001 : _fps;
 }
 
 void FPSLimiter::calculateFPS() {

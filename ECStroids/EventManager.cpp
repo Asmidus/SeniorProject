@@ -70,7 +70,7 @@ void EventManager::processCollision(Event& event) {
 				AssetManager::createMenu();
 				return;
 			}
-			_registry->destroy(collided);
+			//_registry->destroy(collided);
 		}
 	}
 }

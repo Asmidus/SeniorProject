@@ -178,6 +178,7 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="KeyListener.h" />
     <ClInclude Include="Lifetime.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="lodepng.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="MouseListener.h" />

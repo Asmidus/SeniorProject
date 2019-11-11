@@ -39,6 +39,7 @@ private:
 	SDL_Renderer* _renderer;
 	unsigned int _screenWidth;
 	unsigned int _screenHeight;
+	glm::vec2 _gameDims;
 	GameState _gameState;
 	InputManager _inputManager;
 	FPSLimiter _fpsLimiter;

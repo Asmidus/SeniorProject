@@ -27,26 +27,32 @@ Glyph::Glyph(const glm::vec4& destRect, const glm::vec4& uvRect,
 }
 
 Glyph::Glyph(const glm::vec4& destRect, const glm::vec4& uvRect,
-			 GLuint Texture, float Depth, const Color& color, float angle) : texture(Texture), depth(Depth) {
-	static glm::vec2 halfDims, tl, bl, br, tr;
-	halfDims.x = destRect.z / 2.0f;
-	halfDims.y = destRect.w / 2.0f;
+			 GLuint Texture, float Depth, const Color& color,
+			 float angle, const glm::vec2& center) : texture(Texture), depth(Depth) {
+	static glm::vec2 tlDims, brDims, tl, bl, br, tr;
+	tlDims.x = -destRect.z * center.x;
+	tlDims.y = -destRect.w * center.y;
+	brDims.x = destRect.z * (1 - center.x);
+	brDims.y = destRect.w * (1 - center.y);
 
-	// Get points centered at origin
-	tl.x = -halfDims.x;
-	tl.y = halfDims.y;
-	bl.x = -halfDims.x;
-	bl.y = -halfDims.y;
-	br.x = halfDims.x;
-	br.y = -halfDims.y;
-	tr.x = halfDims.x;
-	tr.y = halfDims.y;
+	// Get points centered around origin
+	tl.x = tlDims.x;
+	tl.y = tlDims.y;
+
+	bl.x = tlDims.x;
+	bl.y = brDims.y;
+
+	br.x = brDims.x;
+	br.y = brDims.y;
+
+	tr.x = brDims.x;
+	tr.y = tlDims.y;
 
 	// Rotate the points
-	tl = rotatePoint(tl, angle) + halfDims;
-	bl = rotatePoint(bl, angle) + halfDims;
-	br = rotatePoint(br, angle) + halfDims;
-	tr = rotatePoint(tr, angle) + halfDims;
+	tl = rotatePoint(tl, angle) - tlDims;
+	bl = rotatePoint(bl, angle) - tlDims;
+	br = rotatePoint(br, angle) - tlDims;
+	tr = rotatePoint(tr, angle) - tlDims;
 
 	topLeft.color = color;
 	topLeft.pos.x = destRect.x + tl.x;
@@ -125,8 +131,8 @@ void SpriteBatch::draw(const glm::vec4& destRect, const glm::vec4& uvRect,
 }
 
 void SpriteBatch::draw(const glm::vec4& destRect, const glm::vec4& uvRect,
-					   GLuint texture, float depth, const Color& color, float angle) {
-	_glyphs.emplace_back(destRect, uvRect, texture, depth, color, angle);
+					   GLuint texture, float depth, const Color& color, float angle, const glm::vec2& center) {
+	_glyphs.emplace_back(destRect, uvRect, texture, depth, color, angle, center);
 }
 
 void SpriteBatch::draw(const glm::vec4& destRect, const glm::vec4& uvRect,
@@ -157,8 +163,9 @@ void SpriteBatch::createRenderBatches() {
 	// This will store all the vertices that we need to upload
 	// Resize the buffer to the exact size we need so we can treat
 	// it like an array
-	if (_vertices.size() < _glyphPointers.size()) {
-		_vertices.resize(_glyphPointers.size() * 6);
+	unsigned int numVertices = 6*_glyphPointers.size();
+	if (_vertices.size() < numVertices) {
+		_vertices.resize(numVertices);
 	}
 
 	if (_glyphPointers.empty()) {
@@ -201,7 +208,7 @@ void SpriteBatch::createRenderBatches() {
 	// Bind our VBO
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	// Orphan the buffer (for speed)
-	glBufferData(GL_ARRAY_BUFFER, _glyphPointers.size()*6 * sizeof(Vertex), _vertices.data(), GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(Vertex), _vertices.data(), GL_STREAM_DRAW);
 	// Upload the data
 	//glBufferSubData(GL_ARRAY_BUFFER, 0, _glyphPointers.size()*6 * sizeof(Vertex), _vertices.data());
 
@@ -220,7 +227,7 @@ void SpriteBatch::createVertexArray() {
 	// Bind the VAO. All subsequent opengl calls will modify it's state.
 	glBindVertexArray(_vao);
 
-	//G enerate the VBO if it isn't already generated
+	//Generate the VBO if it isn't already generated
 	if (_vbo == 0) {
 		glGenBuffers(1, &_vbo);
 	}
@@ -254,6 +261,8 @@ void SpriteBatch::sortGlyphs() {
 	case GlyphSortType::TEXTURE:
 		std::stable_sort(_glyphPointers.begin(), _glyphPointers.end(), compareTexture);
 		break;
+	case GlyphSortType::BTF_TEXTURE:
+		std::stable_sort(_glyphPointers.begin(), _glyphPointers.end(), compareBackToFront);
 	}
 }
 
@@ -267,4 +276,10 @@ bool SpriteBatch::compareBackToFront(Glyph* a, Glyph* b) {
 
 bool SpriteBatch::compareTexture(Glyph* a, Glyph* b) {
 	return (a->texture < b->texture);
+}
+
+bool SpriteBatch::compareBTFTexture(Glyph* a, Glyph* b) {
+	bool c = compareBackToFront(a, b);
+	if (c) return c;
+	return compareTexture(a, b);
 }

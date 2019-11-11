@@ -31,11 +31,11 @@ void Window::create(std::string windowName, int screenWidth, int screenHeight, u
 	std::printf("Running OpenGL Version: %s\n", glGetString(GL_VERSION));
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	// Enable alpha blend
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_CULL_FACE);
+	//glDisable(GL_DEPTH_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
-	glDisable(GL_ALPHA_TEST);
+	//glDisable(GL_ALPHA_TEST);
 }
 
 void Window::swapBuffer() {

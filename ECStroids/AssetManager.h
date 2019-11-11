@@ -3,7 +3,7 @@
 #include "Event.h"
 
 namespace AssetManager {
-	void init(entt::registry* r, unsigned int* w, unsigned int* h);
+	void init(entt::registry* r, glm::vec2& gameDims);
 	entt::entity createPlayer();
 	entt::entity createBullet(entt::entity& shooter, bool tracking = false);
 	entt::entity createAsteroid(glm::vec2 speedRange, glm::vec2 sizeRange);

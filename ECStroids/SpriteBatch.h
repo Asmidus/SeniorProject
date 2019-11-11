@@ -12,14 +12,15 @@ enum class GlyphSortType {
 	NONE,
 	FRONT_TO_BACK,
 	BACK_TO_FRONT,
-	TEXTURE
+	TEXTURE,
+	BTF_TEXTURE
 };
 
 // A glyph is a single quad. These are added via SpriteBatch::draw
 class Glyph {
 public:
 	Glyph(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint Texture, float Depth, const Color& color);
-	Glyph(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint Texture, float Depth, const Color& color, float angle);
+	Glyph(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint Texture, float Depth, const Color& color, float angle, const glm::vec2& center = { 0.5, 0.5 });
 
 	GLuint texture;
 	float depth;
@@ -62,7 +63,7 @@ public:
 	// Adds a glyph to the sprite batch
 	void draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, float depth, const Color& color);
 	// Adds a glyph to the sprite batch with rotation
-	void draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, float depth, const Color& color, float angle);
+	void draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, float depth, const Color& color, float angle, const glm::vec2& center = { 0.5, 0.5 });
 	// Adds a glyph to the sprite batch with rotation
 	void draw(const glm::vec4& destRect, const glm::vec4& uvRect, GLuint texture, float depth, const Color& color, const glm::vec2& dir);
 
@@ -83,6 +84,7 @@ private:
 	static bool compareFrontToBack(Glyph* a, Glyph* b);
 	static bool compareBackToFront(Glyph* a, Glyph* b);
 	static bool compareTexture(Glyph* a, Glyph* b);
+	static bool compareBTFTexture(Glyph* a, Glyph* b);
 
 	GLuint _vbo;
 	GLuint _vao;

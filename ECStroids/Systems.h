@@ -5,25 +5,28 @@
 
 class EventManager;
 class SpriteBatch;
+class Camera;
+class Program;
 class Systems
 {
 public:
 	Systems(entt::registry* registry, EventManager* events, InputManager* inputs) : _registry(registry), _events(events), _inputs(inputs) {}
 	~Systems() {}
-	void init(float screenWidth, float screenHeight) { _screenWidth = screenWidth; _screenHeight = screenHeight; }
+	void init(Program* program, float screenWidth, float screenHeight) { _gameWidth = screenWidth; _gameHeight = screenHeight; _program = program; }
 	void updateDelta(float dt) { _dt = dt; }
 	void drawSprites(SpriteBatch* batch);
 	void updateAnimations();
 	void moveEntities();
 	void checkCollisions();
-	void checkInput();
+	void checkInput(Camera* currCam);
 	void checkLifetimes();
 	void spawnAsteroids();
 private:
 	float _dt;
-	float _screenWidth, _screenHeight;
+	float _gameWidth, _gameHeight;
 	entt::registry* _registry;
 	EventManager* _events;
 	InputManager* _inputs;
+	Program* _program;
 };
 
