@@ -15,6 +15,7 @@ void InputManager::pressKey(unsigned int keyID) {
 
 void InputManager::releaseKey(unsigned int keyID) {
 	_pressedKeys.remove(keyID);
+	_releasedKeys.push_back(keyID);
 }
 
 void InputManager::setMouseCoords(float x, float y) {

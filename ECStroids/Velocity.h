@@ -9,6 +9,7 @@ struct Velocity {
 		decel(acceleration/10),
 		currVel(0, 0),
 		currAccel(0),
+		angular(0),
 		constant(false) {}
 	Velocity(glm::vec2 dir, float speed) :
 		direction(dir),
@@ -17,6 +18,7 @@ struct Velocity {
 		decel(0),
 		currAccel(0),
 		currVel(glm::normalize(dir) * speed),
+		angular(0),
 		constant(true) {}
 	glm::vec2 direction;
 	glm::vec2 currVel;
@@ -24,5 +26,6 @@ struct Velocity {
 	float currAccel;
 	float accel;
 	float decel;
+	float angular;
 	bool constant;
 };

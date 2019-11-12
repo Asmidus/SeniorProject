@@ -14,7 +14,7 @@
 
 static GLuint texLoc, camLoc;
 
-MainGame::MainGame() : _screenWidth(800), _screenHeight(800), _gameDims(1000, 1000),
+MainGame::MainGame() : _screenWidth(1000), _screenHeight(1000), _gameDims(750, 750),
 _gameState(GameState::PLAY), _fpsLimiter(200.0f), _fps(120.0f),
 _events(&_registry), _systems(&_registry, &_events, &_inputManager) {}
 
@@ -73,9 +73,11 @@ void MainGame::gameLoop() {
 		}
 		_systems.checkCollisions();
 		static unsigned int loop = 0;
-		if (loop % int(_fps + 1) == 0) {
+		if (loop % 10 == 0) {
 			loop = 1;
-			SDL_SetWindowTitle(_window.get(), std::string("ECStroids - FPS: " + std::to_string(_fps)).c_str());
+			int asteroids = _registry.view<entt::tag<"Enemy"_hs>>().size();
+			int bullets = _registry.view<entt::tag<"Player"_hs>>().size();
+			SDL_SetWindowTitle(_window.get(), std::string("ECStroids - FPS: " + std::to_string(_fps) + " Asteroids: " + std::to_string(asteroids) + " Bullets: " + std::to_string(bullets)).c_str());
 			//std::cout << _fps << " with " << _registry.view<entt::tag<"Player"_hs>>().size() << " and " << _registry.view<entt::tag<"Enemy"_hs>>().size() << "\n";
 		} else {
 			loop++;
@@ -115,7 +117,7 @@ void MainGame::drawGame() {
 	glClearDepth(1.0);
 	// Clear the color and depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// Make sure the shader uses texture 0_program.getUniformLocation("mySampler"), _program.getUniformLocation("P")
+
 	glUniform1i(texLoc, 0);
 
 	// Grab the camera matrix

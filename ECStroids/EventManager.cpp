@@ -70,7 +70,7 @@ void EventManager::processCollision(Event& event) {
 				AssetManager::createMenu();
 				return;
 			}
-			//_registry->destroy(collided);
+			_registry->destroy(collided);
 		}
 	}
 }
@@ -85,7 +85,6 @@ void EventManager::processMove(Event& event) {
 		case Event::moveUp:
 			if (animation) {
 				animation->active = true;
-				//_registry->assign<Light>(entity, glm::vec3(0.5, 0.32, 0));
 			}
 			entityVel.currAccel = entityVel.accel;
 			break;
@@ -96,10 +95,6 @@ void EventManager::processMove(Event& event) {
 			direction = glm::rotate<float>(direction, -6*_dt);
 			break;
 		}
-		glm::normalize(direction);
-		transform.angle = glm::angle(direction, glm::vec2(1, 0));
-		//make sure we can get angles larger than 180 degrees
-		if (direction.y < 0) transform.angle *= -1;
 	}
 }
 

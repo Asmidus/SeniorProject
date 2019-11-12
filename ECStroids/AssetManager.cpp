@@ -19,32 +19,60 @@ void AssetManager::init(entt::registry* r, glm::vec2& gameDims) {
 entt::entity AssetManager::createPlayer() {
 	auto entity = _registry->create();
 	static unsigned int shipSize = 30;
-	std::unordered_map<unsigned int, Event::Type> keyMap;
+	std::unordered_map<unsigned int, std::function<bool(bool)>> keyMap;
 	std::unordered_map<Event::Type, float> cooldowns;
 	cooldowns[Event::Type::shootBullet] = 0.2f;
 	cooldowns[Event::Type::collision] = 1.5f;
-	keyMap[SDLK_w] = Event::Type::moveUp;
-	keyMap[SDLK_d] = Event::Type::moveRight;
-	keyMap[SDLK_a] = Event::Type::moveLeft;
-	keyMap[SDLK_SPACE] = Event::Type::shootBullet;
-	_registry->assign<Velocity>(entity, glm::vec2(1, 0), 2, 2);
-	_registry->assign<KeyListener>(entity, keyMap);
+	Velocity* vel = &(_registry->assign<Velocity>(entity, glm::vec2(1, 0), 3, 3));
 	_registry->assign<Sprite>(entity, "media/ECSplayer.png", 50, 50);
 	_registry->assign<Transform>(entity,
 								 *_gameWidth/2 - shipSize/2, *_gameHeight/2 - shipSize/2,	//pos
 								 shipSize, shipSize,										//size
 								 0,															//z level
 								 0.4f, 0.5f);												//center
-	_registry->assign<Cooldown>(entity, cooldowns);
-	_registry->assign<Animation>(entity, 5, 0.08, true);
+	Cooldown* cool = &(_registry->assign<Cooldown>(entity, cooldowns));
+	_registry->assign<Animation>(entity, 5, 0.08, false);
 	_registry->assign<Health>(entity, 5.0f);
 	_registry->assign<Collider>(entity, shipSize/3);
-	_registry->assign<entt::tag<"Play"_hs>>(entity);
-	_registry->assign<Light>(entity, glm::vec3(0.5, 0.5, 0.5));
+	_registry->assign<entt::tag<"Player"_hs>>(entity);
+	keyMap[SDLK_w] = [entity](bool pressed) {
+		auto& velocity = _registry->get<Velocity>(entity);
+		auto& animation = _registry->get<Animation>(entity);
+		if (pressed) {
+			velocity.currAccel = velocity.accel;
+			animation.active = true;
+			_registry->assign<Light>(entity, glm::vec2(0.1, 0.5), glm::vec3(0.50, 0.32, 0), 50.0f);
+		}
+		else {
+			velocity.currAccel = 0;
+			animation.active = false;
+			_registry->remove<Light>(entity);
+		}
+		return false;
+	};
+	keyMap[SDLK_d] = [entity](bool pressed) {
+		auto& velocity = _registry->get<Velocity>(entity);
+		if (pressed) velocity.angular += 6;
+		else velocity.angular -= 6;
+		return false;
+	};
+	keyMap[SDLK_a] = [entity](bool pressed) {
+		auto& velocity = _registry->get<Velocity>(entity);
+		if (pressed) velocity.angular -= 6;
+		else velocity.angular += 6;
+		return false;
+	};
+	keyMap[SDLK_SPACE] = [entity, cool](bool pressed) { if (pressed && cool->trigger(Event::shootBullet)) createBullet(entity); return true; };
+	_registry->assign<KeyListener>(entity, keyMap);
+
+	//hacky background for lights to render on
+	auto entity2 = _registry->create();
+	_registry->assign<Sprite>(entity2, "media/Button.png", 160, 100, glm::vec3(10, 10, 10));
+	_registry->assign<Transform>(entity2, 0, 0, *_gameWidth, *_gameHeight, 3);
 	return entity;
 }
 
-entt::entity AssetManager::createBullet(entt::entity& shooter, bool tracking) {
+entt::entity AssetManager::createBullet(const entt::entity& shooter) {
 	auto entity = _registry->create();
 	auto& shooterTransform = _registry->get<Transform>(shooter);
 	static unsigned int bulletSize = 12.5;
@@ -56,14 +84,10 @@ entt::entity AssetManager::createBullet(entt::entity& shooter, bool tracking) {
 	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 5.0f);
 	_registry->assign<Transform>(entity, rotatedX, rotatedY, bulletSize, bulletSize, 1);
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50, glm::vec3(0, 255, 0));
-	//_registry->assign<Lifetime>(entity, 0.75);
+	_registry->assign<Lifetime>(entity, 1);
 	_registry->assign<Collider>(entity, bulletSize/2);
-	_registry->assign<Light>(entity, glm::vec3(0, 0.1, 0));
-	if (_registry->has<entt::tag<"Play"_hs>>(shooter)) {
-		_registry->assign<entt::tag<"Player"_hs>>(entity);
-	} else {
-		_registry->assign<entt::tag<"Enemy"_hs>>(entity);
-	}
+	_registry->assign<Light>(entity, glm::vec3(0, 0.5, 0), 50.0f);
+	_registry->assign<entt::tag<"Player"_hs>>(entity);
 	return entity;
 }
 
@@ -123,7 +147,7 @@ entt::entity AssetManager::createButton(Event::Type type, const char* text) {
 	_registry->assign<Sprite>(entity, "media/Button.png", 160, 100, glm::vec3(255, 100, 100));
 	_registry->assign<Transform>(entity, 0, 0, 160, 100, 0);
 	_registry->assign<MouseListener>(entity, mouseMap);
-	_registry->assign<Light>(entity, glm::vec3(0.2, 0.2, 0.2));
+	_registry->assign<Light>(entity, glm::vec3(0.2, 0.2, 0.2), 100);
 	//_registry->assign<Text>(entity, text, 160, 100, 24, SDL_Color({ 25, 25, 25, 255 }));
 	return entity;
 }

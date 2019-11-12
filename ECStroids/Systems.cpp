@@ -19,82 +19,35 @@
 
 void Systems::drawSprites(SpriteBatch* batch) {
 	updateAnimations();
-	glUniform1i(_program->getUniformLocation("numLights"), _registry->view<Light>().size());
-	std::vector<GLfloat> pos;
-	std::vector<GLfloat> col;
+	static const int MAX_LIGHTS = 128;
+	static GLfloat rad[MAX_LIGHTS];
+	static GLfloat pos[MAX_LIGHTS*2];
+	static GLfloat col[MAX_LIGHTS*3];
+	unsigned int lightNum = 0;
 	for (auto& entity : _registry->group<Light>(entt::get<Transform>)) {
+		if (lightNum >= 128) break;
 		auto [light, transform] = _registry->get<Light, Transform>(entity);
-		glm::vec2 lightPos = transform.center * glm::vec2(transform.rect.w, transform.rect.h);
-		lightPos += glm::vec2(transform.rect.x, transform.rect.y);
-		pos.push_back(lightPos.x);
-		pos.push_back(lightPos.y);
-		col.push_back(light.color.r);
-		col.push_back(light.color.g);
-		col.push_back(light.color.b);
+		glm::vec2 lightPos = light.pos * glm::vec2(transform.rect.w, transform.rect.h);
+		float angle = transform.angle;
+		auto center = transform.center * glm::vec2(transform.rect.w, transform.rect.h);
+		float rotatedX = cos(angle) * (lightPos.x - center.x) - sin(angle) * (lightPos.y - center.y) + center.x + transform.rect.x;
+		float rotatedY = sin(angle) * (lightPos.x - center.x) + cos(angle) * (lightPos.y - center.y) + center.y + transform.rect.y;
+		rad[lightNum] = light.radius;
+		pos[2 * lightNum] = rotatedX;
+		pos[2 * lightNum + 1] = rotatedY;
+		col[3 * lightNum] = light.color.r;
+		col[3 * lightNum + 1] = light.color.g;
+		col[3 * lightNum + 2] = light.color.b;
+		++lightNum;
 	}
-	//_registry->group<Light>(entt::get<Transform>).each([=](auto entity, auto & light, auto & transform) {
-	//	glm::vec2 lightPos = transform.center * glm::vec2(transform.rect.w, transform.rect.h);
-	//	lightPos += glm::vec2(transform.rect.x, transform.rect.y);
-	//	//(*poss).push_back(lightPos.x);
-	//	//pos.push_back(lightPos.y);
-	//	//col.push_back(light.color.r);
-	//	//col.push_back(light.color.g);
-	//	//col.push_back(light.color.b);
-	//	//glUniform2f(_program->getUniformLocation("lightLoc"), lightPos.x, lightPos.y);
-	//	//glUniform3f(_program->getUniformLocation("lightCol"), light.color.r, light.color.g, light.color.b);
-	//	glColorMask(false, false, false, false);
-	//	glStencilFunc(GL_ALWAYS, 1, 1);
-	//	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-	//	auto group = _registry->group<entt::tag<"Occluder"_hs>>(entt::get<Transform>);
-	//	for (auto& entity : group) {
-	//		auto& occTransform = group.get<Transform>(entity);
-	//		std::vector<glm::vec2> vertices = {
-	//			glm::vec2(occTransform.rect.x, occTransform.rect.y),
-	//			glm::vec2(occTransform.rect.x + occTransform.rect.w, occTransform.rect.y),
-	//			glm::vec2(occTransform.rect.x, occTransform.rect.y + occTransform.rect.h),
-	//			glm::vec2(occTransform.rect.x + occTransform.rect.w, occTransform.rect.y + occTransform.rect.h)
-	//		};
-	//		for (int i = 0; i < vertices.size(); i++) {
-	//			glm::vec2 currentVertex = vertices[i];
-	//			glm::vec2 nextVertex = vertices[(i + 1) % vertices.size()];
-	//			glm::vec2 edge = nextVertex - currentVertex;
-	//			glm::vec2 normal = glm::vec2(edge.y, -edge.x);
-	//			glm::vec2 lightToCurrent = currentVertex - lightPos;
-	//			if (glm::dot(normal, lightToCurrent) > 0) {
-	//				glm::vec2 point1 = currentVertex + (currentVertex - lightPos);
-	//				glm::vec2 point2 = nextVertex + (nextVertex - lightPos);
-	//				glBegin(GL_QUADS);
-	//				{
-	//					glVertex2f(currentVertex.x, currentVertex.y);
-	//					glVertex2f(point1.x, point1.y);
-	//					glVertex2f(point2.x, point2.y);
-	//					glVertex2f(nextVertex.x, nextVertex.y);
-	//				} glEnd();
-	//			}
-	//		}
-	//	}
-
-	//	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	//	glStencilFunc(GL_EQUAL, 0, 1);
-	//	glColorMask(true, true, true, true);
-
-	//	//glUniform2f(_program->getUniformLocation("lightLoc"), lightPos.x, lightPos.y);
-	//	//glUniform3f(_program->getUniformLocation("lightCol"), light.color.r, light.color.g, light.color.b);
-
-	//	glBegin(GL_QUADS);
-	//	{
-	//		glVertex2f(0, 0);
-	//		glVertex2f(0, _gameHeight);
-	//		glVertex2f(_gameWidth, _gameHeight);
-	//		glVertex2f(_gameWidth, 0);
-	//	} glEnd();
-
-	//	glClear(GL_STENCIL_BUFFER_BIT);
-	//});
+	static GLint numLights = _program->getUniformLocation("numLights");
 	static GLint lightLoc = _program->getUniformLocation("lightLoc");
 	static GLint lightCol = _program->getUniformLocation("lightCol");
-	glUniform2fv(lightLoc, pos.size(), pos.data());
-	glUniform3fv(lightCol, col.size(), col.data());
+	static GLint lightRad = _program->getUniformLocation("lightRad");
+	glUniform1i(numLights, lightNum);
+	glUniform1fv(lightRad, lightNum, rad);
+	glUniform2fv(lightLoc, lightNum, pos);
+	glUniform3fv(lightCol, lightNum, col);
 	batch->begin(GlyphSortType::BACK_TO_FRONT);
 	_registry->group<Sprite, Transform>().each([batch](auto entity, auto& sprite, auto& transform) {
 		//TextureManager::Draw(sprite.texture, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);
@@ -137,7 +90,6 @@ void Systems::updateAnimations() {
 			} else {
 				sprite.src.x = 0;
 			}
-			animation.active = false;
 		});
 }
 
@@ -163,8 +115,13 @@ void Systems::moveEntities() {
 			} else if (velocity.currAccel == 0 && glm::length(velocity.currVel) < 0.01) {
 				velocity.currVel = glm::vec2(0, 0);
 			}
-			//reset the current acceleration
-			velocity.currAccel = 0;
+		}
+		if (velocity.angular) {
+			velocity.direction = glm::rotate<float>(velocity.direction, velocity.angular * _dt);
+			glm::normalize(velocity.direction);
+			transform.angle = glm::angle(velocity.direction, glm::vec2(1, 0));
+			//make sure we can get angles larger than 180 degrees
+			if (velocity.direction.y < 0) transform.angle *= -1;
 		}
 		//update the transform of the entity
 		transform.updatePos(velocity.currVel * 120.0f * _dt);
@@ -191,7 +148,7 @@ void Systems::checkCollisions() {
 	auto group = _registry->view<entt::tag<"Player"_hs>, Transform, Collider>();
 
 	//See if a simple 4-tile quad collision algorithm would be more efficient than brute force
-	if (enemies.size() * group.size() > (4 * (enemies.size() + group.size()) + enemies.size() / 4 * group.size())) {
+	if (false) {
 		static const glm::vec2 quadDims[4] = { glm::vec2(0, 0), glm::vec2(_gameWidth / 2, 0), glm::vec2(0, _gameHeight / 2), glm::vec2(_gameWidth / 2, _gameHeight / 2) };
 		static const std::vector<unsigned int> quads = { 0, 1, 2, 3 };
 		auto colliders = _registry->group<Collider>(entt::get<Transform>);
@@ -291,8 +248,8 @@ void Systems::checkInput(Camera* currCam) {
 	//For all mouse events, find every mouse listener
 	//and find out what event is tied to the button that is pressed and queue the event
 	auto mouseView = _registry->view<MouseListener>();
-	for (auto key : _inputs->getPressedKeys()) {
-		for (auto entity : mouseView) {
+	for (auto entity : mouseView) {
+		for (auto key : _inputs->getPressedKeys()) {
 			if (mouseView.get(entity).map.find(key) != mouseView.get(entity).map.end()) {
 				auto cooldowns = _registry->try_get<Cooldown>(entity);
 				auto eventType = mouseView.get(entity).map[key];
@@ -303,19 +260,25 @@ void Systems::checkInput(Camera* currCam) {
 			}
 		}
 	}
-	auto keyView = _registry->view<KeyListener>();
-	for (auto key : _inputs->getPressedKeys()) {
-		for (auto entity : keyView) {
-			if (keyView.get(entity).map.find(key) != keyView.get(entity).map.end()) {
-				auto cooldowns = _registry->try_get<Cooldown>(entity);
-				auto eventType = keyView.get(entity).map[key];
-				if (cooldowns && !cooldowns->trigger(eventType)) {
-					continue;
+
+	_registry->view<KeyListener>().each([=](auto& listener) {
+		for (auto key : _inputs->getPressedKeys()) {
+			if (listener.map.find(key) != listener.map.end()) {
+				auto action = listener.map[key];
+				if (listener.enabled[key]) {
+					listener.enabled[key] = action(true);
 				}
-				_events->registerEvent(Event(keyView.get(entity).map[key], entity));
 			}
 		}
-	}
+		for (auto key : _inputs->getReleasedKeys()) {
+			if (listener.map.find(key) != listener.map.end()) {
+				auto action = listener.map[key];
+				action(false);
+				listener.enabled[key] = true;
+			}
+		}
+	});
+	_inputs->refresh();
 }
 
 void Systems::checkLifetimes() {

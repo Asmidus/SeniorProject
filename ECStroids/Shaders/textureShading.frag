@@ -13,22 +13,22 @@ uniform sampler2D mySampler;
 uniform int numLights;
 uniform vec2 lightLoc[MAX_LIGHTS];
 uniform vec3 lightCol[MAX_LIGHTS];
+uniform float lightRad[MAX_LIGHTS];
+
 
 
 void main() {
 	//cos(x) returns a number between -1 and 1. To convert it into the range 0 to 1
 	//you simply do (cos(x) + 1.0) * 0.5
-	vec4 lightColor = vec4(0, 0, 0, 1);
-	for(int i = 0;i < numLights;i++) {
-		float distance = length(lightLoc[i] - fragmentPosition.xy)/200;
-		float attenuation = 1 / distance;
-		if(attenuation > 2) {
-			attenuation = 2;
-		}
+	vec4 lightColor = vec4(0.2, 0.2, 0.2, 1);
+	vec4 textureColor = texture(mySampler, fragmentUV);
+	int lights = numLights;
+	if(numLights > MAX_LIGHTS) lights = MAX_LIGHTS;
+	for(int i = 0;i < lights;i++) {
+		float distance = length(lightLoc[i] - fragmentPosition.xy)/lightRad[i] + 0.5;
+		float attenuation = 1 / pow(distance, 2);
 		lightColor = lightColor + vec4(attenuation, attenuation, attenuation, 1) * vec4(lightCol[i], 1);
 	}
-	vec4 textureColor = texture(mySampler, fragmentUV);
-
 	//Make crazy colors using time and position!
-	color = fragmentColor * textureColor * lightColor;
+	color =  fragmentColor * textureColor * lightColor;
 }
