@@ -19,60 +19,82 @@
 
 void Systems::drawSprites(SpriteBatch* batch) {
 	updateAnimations();
-	_registry->group<Light>(entt::get<Transform>).each([=](auto entity, auto& light, auto& transform) {
+	glUniform1i(_program->getUniformLocation("numLights"), _registry->view<Light>().size());
+	std::vector<GLfloat> pos;
+	std::vector<GLfloat> col;
+	for (auto& entity : _registry->group<Light>(entt::get<Transform>)) {
+		auto [light, transform] = _registry->get<Light, Transform>(entity);
 		glm::vec2 lightPos = transform.center * glm::vec2(transform.rect.w, transform.rect.h);
 		lightPos += glm::vec2(transform.rect.x, transform.rect.y);
-		glUniform2f(_program->getUniformLocation("lightLoc"), lightPos.x, lightPos.y);
-		glUniform3f(_program->getUniformLocation("lightCol"), light.color.r, light.color.g, light.color.b);
-		glColorMask(false, false, false, false);
-		glStencilFunc(GL_ALWAYS, 1, 1);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-		auto group = _registry->group<entt::tag<"Occluder"_hs>>(entt::get<Transform>);
-		for (auto& entity : group) {
-			auto& occTransform = group.get<Transform>(entity);
-			std::vector<glm::vec2> vertices = {
-				glm::vec2(occTransform.rect.x, occTransform.rect.y),
-				glm::vec2(occTransform.rect.x + occTransform.rect.w, occTransform.rect.y),
-				glm::vec2(occTransform.rect.x, occTransform.rect.y + occTransform.rect.h),
-				glm::vec2(occTransform.rect.x + occTransform.rect.w, occTransform.rect.y + occTransform.rect.h)
-			};
-			for (int i = 0; i < vertices.size(); i++) {
-				glm::vec2 currentVertex = vertices[i];
-				glm::vec2 nextVertex = vertices[(i + 1) % vertices.size()];
-				glm::vec2 edge = nextVertex - currentVertex;
-				glm::vec2 normal = glm::vec2(edge.y, -edge.x);
-				glm::vec2 lightToCurrent = currentVertex - lightPos;
-				if (glm::dot(normal, lightToCurrent) > 0) {
-					glm::vec2 point1 = currentVertex + (currentVertex - lightPos);
-					glm::vec2 point2 = nextVertex + (nextVertex - lightPos);
-					glBegin(GL_QUADS);
-					{
-						glVertex2f(currentVertex.x, currentVertex.y);
-						glVertex2f(point1.x, point1.y);
-						glVertex2f(point2.x, point2.y);
-						glVertex2f(nextVertex.x, nextVertex.y);
-					} glEnd();
-				}
-			}
-		}
+		pos.push_back(lightPos.x);
+		pos.push_back(lightPos.y);
+		col.push_back(light.color.r);
+		col.push_back(light.color.g);
+		col.push_back(light.color.b);
+	}
+	//_registry->group<Light>(entt::get<Transform>).each([=](auto entity, auto & light, auto & transform) {
+	//	glm::vec2 lightPos = transform.center * glm::vec2(transform.rect.w, transform.rect.h);
+	//	lightPos += glm::vec2(transform.rect.x, transform.rect.y);
+	//	//(*poss).push_back(lightPos.x);
+	//	//pos.push_back(lightPos.y);
+	//	//col.push_back(light.color.r);
+	//	//col.push_back(light.color.g);
+	//	//col.push_back(light.color.b);
+	//	//glUniform2f(_program->getUniformLocation("lightLoc"), lightPos.x, lightPos.y);
+	//	//glUniform3f(_program->getUniformLocation("lightCol"), light.color.r, light.color.g, light.color.b);
+	//	glColorMask(false, false, false, false);
+	//	glStencilFunc(GL_ALWAYS, 1, 1);
+	//	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	//	auto group = _registry->group<entt::tag<"Occluder"_hs>>(entt::get<Transform>);
+	//	for (auto& entity : group) {
+	//		auto& occTransform = group.get<Transform>(entity);
+	//		std::vector<glm::vec2> vertices = {
+	//			glm::vec2(occTransform.rect.x, occTransform.rect.y),
+	//			glm::vec2(occTransform.rect.x + occTransform.rect.w, occTransform.rect.y),
+	//			glm::vec2(occTransform.rect.x, occTransform.rect.y + occTransform.rect.h),
+	//			glm::vec2(occTransform.rect.x + occTransform.rect.w, occTransform.rect.y + occTransform.rect.h)
+	//		};
+	//		for (int i = 0; i < vertices.size(); i++) {
+	//			glm::vec2 currentVertex = vertices[i];
+	//			glm::vec2 nextVertex = vertices[(i + 1) % vertices.size()];
+	//			glm::vec2 edge = nextVertex - currentVertex;
+	//			glm::vec2 normal = glm::vec2(edge.y, -edge.x);
+	//			glm::vec2 lightToCurrent = currentVertex - lightPos;
+	//			if (glm::dot(normal, lightToCurrent) > 0) {
+	//				glm::vec2 point1 = currentVertex + (currentVertex - lightPos);
+	//				glm::vec2 point2 = nextVertex + (nextVertex - lightPos);
+	//				glBegin(GL_QUADS);
+	//				{
+	//					glVertex2f(currentVertex.x, currentVertex.y);
+	//					glVertex2f(point1.x, point1.y);
+	//					glVertex2f(point2.x, point2.y);
+	//					glVertex2f(nextVertex.x, nextVertex.y);
+	//				} glEnd();
+	//			}
+	//		}
+	//	}
 
-		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-		glStencilFunc(GL_EQUAL, 0, 1);
-		glColorMask(true, true, true, true);
+	//	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	//	glStencilFunc(GL_EQUAL, 0, 1);
+	//	glColorMask(true, true, true, true);
 
-		glUniform2f(_program->getUniformLocation("lightLoc"), lightPos.x, lightPos.y);
-		glUniform3f(_program->getUniformLocation("lightCol"), light.color.r, light.color.g, light.color.b);
+	//	//glUniform2f(_program->getUniformLocation("lightLoc"), lightPos.x, lightPos.y);
+	//	//glUniform3f(_program->getUniformLocation("lightCol"), light.color.r, light.color.g, light.color.b);
 
-		glBegin(GL_QUADS);
-		{
-			glVertex2f(0, 0);
-			glVertex2f(0, _gameHeight);
-			glVertex2f(_gameWidth, _gameHeight);
-			glVertex2f(_gameWidth, 0);
-		} glEnd();
+	//	glBegin(GL_QUADS);
+	//	{
+	//		glVertex2f(0, 0);
+	//		glVertex2f(0, _gameHeight);
+	//		glVertex2f(_gameWidth, _gameHeight);
+	//		glVertex2f(_gameWidth, 0);
+	//	} glEnd();
 
-		glClear(GL_STENCIL_BUFFER_BIT);
-	});
+	//	glClear(GL_STENCIL_BUFFER_BIT);
+	//});
+	static GLint lightLoc = _program->getUniformLocation("lightLoc");
+	static GLint lightCol = _program->getUniformLocation("lightCol");
+	glUniform2fv(lightLoc, pos.size(), pos.data());
+	glUniform3fv(lightCol, col.size(), col.data());
 	batch->begin(GlyphSortType::BACK_TO_FRONT);
 	_registry->group<Sprite, Transform>().each([batch](auto entity, auto& sprite, auto& transform) {
 		//TextureManager::Draw(sprite.texture, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);

@@ -85,6 +85,7 @@ void EventManager::processMove(Event& event) {
 		case Event::moveUp:
 			if (animation) {
 				animation->active = true;
+				//_registry->assign<Light>(entity, glm::vec3(0.5, 0.32, 0));
 			}
 			entityVel.currAccel = entityVel.accel;
 			break;

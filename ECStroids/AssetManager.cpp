@@ -21,7 +21,7 @@ entt::entity AssetManager::createPlayer() {
 	static unsigned int shipSize = 30;
 	std::unordered_map<unsigned int, Event::Type> keyMap;
 	std::unordered_map<Event::Type, float> cooldowns;
-	cooldowns[Event::Type::shootBullet] = 0.1f;
+	cooldowns[Event::Type::shootBullet] = 0.2f;
 	cooldowns[Event::Type::collision] = 1.5f;
 	keyMap[SDLK_w] = Event::Type::moveUp;
 	keyMap[SDLK_d] = Event::Type::moveRight;
@@ -40,7 +40,7 @@ entt::entity AssetManager::createPlayer() {
 	_registry->assign<Health>(entity, 5.0f);
 	_registry->assign<Collider>(entity, shipSize/3);
 	_registry->assign<entt::tag<"Play"_hs>>(entity);
-	_registry->assign<Light>(entity, glm::vec3(1, 1, 1));
+	_registry->assign<Light>(entity, glm::vec3(0.5, 0.5, 0.5));
 	return entity;
 }
 
@@ -56,8 +56,9 @@ entt::entity AssetManager::createBullet(entt::entity& shooter, bool tracking) {
 	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 5.0f);
 	_registry->assign<Transform>(entity, rotatedX, rotatedY, bulletSize, bulletSize, 1);
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50, glm::vec3(0, 255, 0));
-	_registry->assign<Lifetime>(entity, 0.75);
+	//_registry->assign<Lifetime>(entity, 0.75);
 	_registry->assign<Collider>(entity, bulletSize/2);
+	_registry->assign<Light>(entity, glm::vec3(0, 0.1, 0));
 	if (_registry->has<entt::tag<"Play"_hs>>(shooter)) {
 		_registry->assign<entt::tag<"Player"_hs>>(entity);
 	} else {
@@ -122,6 +123,7 @@ entt::entity AssetManager::createButton(Event::Type type, const char* text) {
 	_registry->assign<Sprite>(entity, "media/Button.png", 160, 100, glm::vec3(255, 100, 100));
 	_registry->assign<Transform>(entity, 0, 0, 160, 100, 0);
 	_registry->assign<MouseListener>(entity, mouseMap);
+	_registry->assign<Light>(entity, glm::vec3(0.2, 0.2, 0.2));
 	//_registry->assign<Text>(entity, text, 160, 100, 24, SDL_Color({ 25, 25, 25, 255 }));
 	return entity;
 }
