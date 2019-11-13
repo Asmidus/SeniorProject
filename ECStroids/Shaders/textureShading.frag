@@ -20,7 +20,7 @@ uniform float lightRad[MAX_LIGHTS];
 void main() {
 	//cos(x) returns a number between -1 and 1. To convert it into the range 0 to 1
 	//you simply do (cos(x) + 1.0) * 0.5
-	vec4 lightColor = vec4(0.2, 0.2, 0.2, 1);
+	vec4 lightColor = vec4(0.5, 0.5, 0.5, 1);
 	vec4 textureColor = texture(mySampler, fragmentUV);
 	int lights = numLights;
 	if(numLights > MAX_LIGHTS) lights = MAX_LIGHTS;

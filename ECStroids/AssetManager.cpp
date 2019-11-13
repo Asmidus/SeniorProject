@@ -21,8 +21,8 @@ entt::entity AssetManager::createPlayer() {
 	static unsigned int shipSize = 30;
 	std::unordered_map<unsigned int, std::function<bool(bool)>> keyMap;
 	std::unordered_map<Event::Type, float> cooldowns;
-	cooldowns[Event::Type::shootBullet] = 0.2f;
-	cooldowns[Event::Type::collision] = 1.5f;
+	cooldowns[Event::Type::shootBullet] = 0.002f;
+	//cooldowns[Event::Type::collision] = 1.5f;
 	Velocity* vel = &(_registry->assign<Velocity>(entity, glm::vec2(1, 0), 3, 3));
 	_registry->assign<Sprite>(entity, "media/ECSplayer.png", 50, 50);
 	_registry->assign<Transform>(entity,
@@ -41,12 +41,12 @@ entt::entity AssetManager::createPlayer() {
 		if (pressed) {
 			velocity.currAccel = velocity.accel;
 			animation.active = true;
-			_registry->assign<Light>(entity, glm::vec2(0.1, 0.5), glm::vec3(0.50, 0.32, 0), 50.0f);
+			//_registry->assign<Light>(entity, glm::vec2(0.1, 0.5), glm::vec3(1, 0.64, 0), 50.0f);
 		}
 		else {
 			velocity.currAccel = 0;
 			animation.active = false;
-			_registry->remove<Light>(entity);
+			//_registry->remove<Light>(entity);
 		}
 		return false;
 	};
@@ -81,12 +81,12 @@ entt::entity AssetManager::createBullet(const entt::entity& shooter) {
 	auto center = shooterTransform.center * glm::vec2(shooterTransform.rect.w, shooterTransform.rect.h);
 	float rotatedX = cos(angle) * (point.x - center.x) - sin(angle) * (point.y - center.y) + center.x + shooterTransform.rect.x - bulletSize/2;
 	float rotatedY = sin(angle) * (point.x - center.x) + cos(angle) * (point.y - center.y) + center.y + shooterTransform.rect.y - bulletSize/2;
-	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 5.0f);
+	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 0.0f);
 	_registry->assign<Transform>(entity, rotatedX, rotatedY, bulletSize, bulletSize, 1);
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50, glm::vec3(0, 255, 0));
-	_registry->assign<Lifetime>(entity, 1);
+	//_registry->assign<Lifetime>(entity, 2);
 	_registry->assign<Collider>(entity, bulletSize/2);
-	_registry->assign<Light>(entity, glm::vec3(0, 0.5, 0), 50.0f);
+	_registry->assign<Light>(entity, glm::vec3(0, 1, 0), 50.0f);
 	_registry->assign<entt::tag<"Player"_hs>>(entity);
 	return entity;
 }

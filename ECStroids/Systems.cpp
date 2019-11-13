@@ -148,7 +148,7 @@ void Systems::checkCollisions() {
 	auto group = _registry->view<entt::tag<"Player"_hs>, Transform, Collider>();
 
 	//See if a simple 4-tile quad collision algorithm would be more efficient than brute force
-	if (false) {
+	if (true) {
 		static const glm::vec2 quadDims[4] = { glm::vec2(0, 0), glm::vec2(_gameWidth / 2, 0), glm::vec2(0, _gameHeight / 2), glm::vec2(_gameWidth / 2, _gameHeight / 2) };
 		static const std::vector<unsigned int> quads = { 0, 1, 2, 3 };
 		auto colliders = _registry->group<Collider>(entt::get<Transform>);
@@ -167,13 +167,13 @@ void Systems::checkCollisions() {
 					(*test).push_back(&entity);
 				}
 			}
-			for (unsigned int j = 0; j < quadrants.size(); ++j) {
+			for (unsigned int j = 0; j < quadrants.size(); j++) {
 				auto entity1 = quadrants[j];
-				if (_registry->has<entt::tag<"Player"_hs>>(*entity1)) {
+				//if (_registry->has<entt::tag<"Player"_hs>>(*entity1)) {
 					auto [trans1, col1] = _registry->get<Transform, Collider>(*entity1);
-					for (unsigned int k = 0; k < quadrants.size(); ++k) {
+					for (unsigned int k = j+1; k < quadrants.size(); k++) {
 						auto entity2 = quadrants[k];
-						if (_registry->has<entt::tag<"Enemy"_hs>>(*entity2)) {
+						//if (_registry->has<entt::tag<"Enemy"_hs>>(*entity2)) {
 							auto [trans2, col2] = _registry->get<Transform, Collider>(*entity2);
 							if (col1.circular) {
 								glm::vec2 e1Pos = glm::vec2(trans1.center.x * trans1.rect.w + trans1.rect.x,
@@ -190,9 +190,9 @@ void Systems::checkCollisions() {
 									}
 								}
 							}
-						}
+						//}
 					}
-				}
+				//}
 			}
 		});
 	} else {
