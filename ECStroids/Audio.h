@@ -1,5 +1,4 @@
 #pragma once
-#include <SDL_mixer.h>
 #include <vector>
 
 using namespace std;
@@ -22,7 +21,7 @@ public:
 		level1
 	};
 private:
-	vector<Mix_Chunk*> sounds;
-	vector<Mix_Music*> musics;
+	//vector<Mix_Chunk*> sounds;
+	//vector<Mix_Music*> musics;
 };
 

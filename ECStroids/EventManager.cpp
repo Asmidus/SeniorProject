@@ -91,14 +91,12 @@ void EventManager::processCollision(Event& event) {
 	}
 	auto& v1 = _registry->get<Velocity>(p);
 	auto& v2 = _registry->get<Velocity>(e);
-	auto& t1 = _registry->get<Transform>(p);
-	auto& t2 = _registry->get<Transform>(e);
+	auto& t1 = _registry->get<Sprite>(p);
+	auto& t2 = _registry->get<Sprite>(e);
 	auto& c1 = _registry->get<Collider>(p);
 	auto& c2 = _registry->get<Collider>(e);
-	glm::vec2 e1Pos = glm::vec2(t1.center.x * t1.rect.w + t1.rect.x,
-								t1.center.y * t1.rect.h + t1.rect.y);
-	glm::vec2 e2Pos = glm::vec2(t2.center.x * t2.rect.w + t2.rect.x,
-								t2.center.y * t2.rect.h + t2.rect.y);
+	glm::vec2 e1Pos = glm::vec2(t1.getPosition().x, t1.getPosition().y);
+	glm::vec2 e2Pos = glm::vec2(t2.getPosition().x, t2.getPosition().y);
 	auto dir = e1Pos - e2Pos;
 	if (e1Pos == e2Pos) {
 		dir = glm::vec2(rand()%200-100, rand()%200-100);
@@ -109,13 +107,10 @@ void EventManager::processCollision(Event& event) {
 	v2.currVel = -glm::normalize(dir) * speed;
 	if (!_registry->has<Health>(p)) {
 		v1.currVel = glm::normalize(dir) * glm::length(v1.currVel);
-		t2.rect.x -= displace.x/2;
-		t2.rect.y -= displace.y/2;
-		t1.rect.x += displace.x/2;
-		t1.rect.y += displace.y/2;
+		t2.move(-displace.x / 2, -displace.y / 2);
+		t1.move(displace.x / 2, displace.y / 2);
 	} else {
-		t2.rect.x -= displace.x;
-		t2.rect.y -= displace.y;
+		t2.move(-displace.x, -displace.y);
 	}
 	if (_registry->has<entt::tag<"Player"_hs>>(p) && !_registry->has<entt::tag<"Player"_hs>>(e)) {
 		if (_registry->has<entt::tag<"Split"_hs>>(e)) {
@@ -156,10 +151,9 @@ void EventManager::processShoot(Event& event) {
 
 void EventManager::processStartGame(Event& event) {
 	if (!event.entities.empty()) {
-		auto rect = _registry->get<Transform>(event.entities[0]).rect;
+		auto rect = _registry->get<Sprite>(event.entities[0]).getGlobalBounds();
 		auto pos = event.mousePos;
-		if (pos.x < rect.x || pos.x > rect.x + rect.w ||
-			pos.y < rect.y || pos.y > rect.y + rect.h) {
+		if (!rect.contains(event.mousePos.x, event.mousePos.y)) {
 			return;
 		}
 	}
@@ -170,10 +164,9 @@ void EventManager::processStartGame(Event& event) {
 
 int EventManager::processQuit(Event& event) {
 	if (!event.entities.empty()) {
-		auto rect = _registry->get<Transform>(event.entities[0]).rect;
+		auto rect = _registry->get<Sprite>(event.entities[0]).getGlobalBounds();
 		auto pos = event.mousePos;
-		if (pos.x < rect.x || pos.x > rect.x + rect.w ||
-			pos.y < rect.y || pos.y > rect.y + rect.h) {
+		if (!rect.contains(event.mousePos.x, event.mousePos.y)) {
 			return 0;
 		}
 	}

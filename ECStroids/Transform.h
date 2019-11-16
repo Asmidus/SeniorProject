@@ -1,12 +1,11 @@
 #pragma once
-#include <SDL.h>
 #include <glm/glm.hpp>
 
 struct Transform {
 	//angle of rotation
 	float angle;
 	//the position and dimensions
-	SDL_FRect rect;
+	glm::vec4 rect;
 	//z level the transform exists on, 0 is the top most layer
 	unsigned int z;
 	//center is multiplicative so 0.5, 0.5 is 50% of the width from the left and 50% of the height from the top
@@ -17,8 +16,8 @@ struct Transform {
 		center.y = 25;
 		rect.x = 0;
 		rect.y = 0;
+		rect.z = 50;
 		rect.w = 50;
-		rect.h = 50;
 		angle = 0.0f;
 		z = 0;
 	}
@@ -31,8 +30,8 @@ struct Transform {
 	}
 	
 	Transform(float x, float y, float w, float h, unsigned int zLevel) : Transform(x, y) {
-		rect.w = w;
-		rect.h = h;
+		rect.z = w;
+		rect.w = h;
 		z = zLevel;
 	}
 

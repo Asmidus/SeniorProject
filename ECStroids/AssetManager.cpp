@@ -1,6 +1,4 @@
 #include "AssetManager.h"
-#include <SDL.h>
-#include "AssetManager.h"
 #include "Components.h"
 #include <iostream>
 
@@ -24,18 +22,15 @@ entt::entity AssetManager::createPlayer() {
 	cooldowns[Event::Type::shootBullet] = 0.002f;
 	//cooldowns[Event::Type::collision] = 1.5f;
 	Velocity* vel = &(_registry->assign<Velocity>(entity, glm::vec2(1, 0), 3, 3));
-	_registry->assign<Sprite>(entity, "media/ECSplayer.png", 50, 50);
-	_registry->assign<Transform>(entity,
-								 *_gameWidth/2 - shipSize/2, *_gameHeight/2 - shipSize/2,	//pos
-								 shipSize, shipSize,										//size
-								 0,															//z level
-								 0.4f, 0.5f);												//center
+	_registry->assign<Sprite>(entity, "media/ECSplayer.png",
+							  sf::IntRect(0, 0, 50, 50),
+							  sf::FloatRect(400, 400, 50, 50));
 	Cooldown* cool = &(_registry->assign<Cooldown>(entity, cooldowns));
 	_registry->assign<Animation>(entity, 5, 0.08, false);
 	_registry->assign<Health>(entity, 5.0f);
-	_registry->assign<Collider>(entity, shipSize/3);
+	_registry->assign<Collider>(entity, shipSize/2);
 	_registry->assign<entt::tag<"Player"_hs>>(entity);
-	keyMap[SDLK_w] = [entity](bool pressed) {
+	keyMap[sf::Keyboard::W] = [entity](bool pressed) {
 		auto& velocity = _registry->get<Velocity>(entity);
 		auto& animation = _registry->get<Animation>(entity);
 		if (pressed) {
@@ -50,19 +45,19 @@ entt::entity AssetManager::createPlayer() {
 		}
 		return false;
 	};
-	keyMap[SDLK_d] = [entity](bool pressed) {
+	keyMap[sf::Keyboard::D] = [entity](bool pressed) {
 		auto& velocity = _registry->get<Velocity>(entity);
 		if (pressed) velocity.angular += 6;
 		else velocity.angular -= 6;
 		return false;
 	};
-	keyMap[SDLK_a] = [entity](bool pressed) {
+	keyMap[sf::Keyboard::A] = [entity](bool pressed) {
 		auto& velocity = _registry->get<Velocity>(entity);
 		if (pressed) velocity.angular -= 6;
 		else velocity.angular += 6;
 		return false;
 	};
-	keyMap[SDLK_SPACE] = [entity, cool](bool pressed) { if (pressed && cool->trigger(Event::shootBullet)) createBullet(entity); return true; };
+	keyMap[sf::Keyboard::Space] = [entity, cool](bool pressed) { if (pressed && cool->trigger(Event::shootBullet)) createBullet(entity); return true; };
 	_registry->assign<KeyListener>(entity, keyMap);
 
 	//hacky background for lights to render on
@@ -74,17 +69,15 @@ entt::entity AssetManager::createPlayer() {
 
 entt::entity AssetManager::createBullet(const entt::entity& shooter) {
 	auto entity = _registry->create();
-	auto& shooterTransform = _registry->get<Transform>(shooter);
 	static unsigned int bulletSize = 12.5;
-	glm::vec2 point = glm::vec2(shooterTransform.rect.w, shooterTransform.rect.h/2);
-	float angle = shooterTransform.angle;
-	auto center = shooterTransform.center * glm::vec2(shooterTransform.rect.w, shooterTransform.rect.h);
-	float rotatedX = cos(angle) * (point.x - center.x) - sin(angle) * (point.y - center.y) + center.x + shooterTransform.rect.x - bulletSize/2;
-	float rotatedY = sin(angle) * (point.x - center.x) + cos(angle) * (point.y - center.y) + center.y + shooterTransform.rect.y - bulletSize/2;
 	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 0.0f);
-	_registry->assign<Transform>(entity, rotatedX, rotatedY, bulletSize, bulletSize, 1);
-	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50, glm::vec3(0, 255, 0));
-	//_registry->assign<Lifetime>(entity, 2);
+	auto& shooterSprite = _registry->get<Sprite>(shooter);
+	auto pos = shooterSprite.getTransform().transformPoint(shooterSprite.getLocalBounds().width, shooterSprite.getLocalBounds().height / 2);
+	_registry->assign<Sprite>(entity, "media/Projectile.png",						//texture
+							  sf::IntRect(0, 0, 50, 50),							//texture dimensions
+							  sf::FloatRect(pos.x, pos.y, bulletSize, bulletSize),	//transform dimensions
+							  sf::Color::Green);									//color
+	_registry->assign<Lifetime>(entity, 2);
 	_registry->assign<Collider>(entity, bulletSize/2);
 	_registry->assign<Light>(entity, glm::vec3(0, 1, 0), 50.0f);
 	_registry->assign<entt::tag<"Player"_hs>>(entity);
@@ -129,7 +122,7 @@ entt::entity AssetManager::createAsteroid(entt::entity* parentAsteroid) {
 	auto transform = _registry->get<Transform>(*parentAsteroid);
 	float speed = _registry->get<Velocity>(*parentAsteroid).maxSpeed + 0.5f;
 	_registry->assign<Velocity>(entity, glm::vec2(xDir, yDir), speed);
-	_registry->assign<Transform>(entity, transform.rect.x, transform.rect.y, transform.rect.w / 2, transform.rect.h / 2, 2);
+	//_registry->assign<Transform>(entity, transform.rect.x, transform.rect.y, transform.rect.w / 2, transform.rect.h / 2, 2);
 	if (transform.rect.w > 75) {
 		_registry->assign<entt::tag<"Split"_hs>>(entity);
 	}
@@ -143,9 +136,9 @@ entt::entity AssetManager::createAsteroid(entt::entity* parentAsteroid) {
 entt::entity AssetManager::createButton(Event::Type type, const char* text) {
 	auto entity = _registry->create();
 	std::unordered_map<unsigned int, Event::Type> mouseMap;
-	mouseMap[SDL_BUTTON_LEFT] = type;
+	mouseMap[sf::Mouse::Left] = type;
 	_registry->assign<Sprite>(entity, "media/Button.png", 160, 100, glm::vec3(255, 100, 100));
-	_registry->assign<Transform>(entity, 0, 0, 160, 100, 0);
+	//_registry->assign<Transform>(entity, 0, 0, 160, 100, 0);
 	_registry->assign<MouseListener>(entity, mouseMap);
 	_registry->assign<Light>(entity, glm::vec3(0.2, 0.2, 0.2), 100);
 	//_registry->assign<Text>(entity, text, 160, 100, 24, SDL_Color({ 25, 25, 25, 255 }));
@@ -166,11 +159,11 @@ void AssetManager::clearScreen() {
 
 void AssetManager::createMenu() {
 	auto start = createButton(Event::Type::startGame, "START");
-	auto& startRect = _registry->get<Transform>(start).rect;
-	startRect.x = *_gameWidth / 4 - startRect.w / 2;
-	startRect.y = *_gameHeight / 2 - startRect.h / 2;
+	//auto& startRect = _registry->get<Transform>(start).rect;
+	//startRect.x = *_gameWidth / 4 - startRect.w / 2;
+	//startRect.y = *_gameHeight / 2 - startRect.h / 2;
 	auto quit = createButton(Event::Type::quit, "QUIT");
-	auto& quitRect = _registry->get<Transform>(quit).rect;
-	quitRect.x = *_gameWidth * 3 / 4 - quitRect.w / 2;
-	quitRect.y = *_gameHeight / 2 - quitRect.h / 2;
+	//auto& quitRect = _registry->get<Transform>(quit).rect;
+	//quitRect.x = *_gameWidth * 3 / 4 - quitRect.w / 2;
+	//quitRect.y = *_gameHeight / 2 - quitRect.h / 2;
 }

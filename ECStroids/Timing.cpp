@@ -1,6 +1,6 @@
 #include "Timing.h"
 #include <iostream>
-#include <SDL/SDL.h>
+
 typedef std::chrono::high_resolution_clock Clock;
 
 FPSLimiter::FPSLimiter(float maxFPS) { setMaxFPS(maxFPS); }
