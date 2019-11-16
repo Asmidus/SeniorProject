@@ -1,9 +1,7 @@
 #include "SpriteBatch.h"
-
-
-#include "SpriteBatch.h"
-
+#include <iostream>
 #include <algorithm>
+#include <execution>
 
 
 
@@ -15,7 +13,7 @@ Glyph::Glyph(Sprite& sprite) {
 	topRight.position.x = localBounds->width;
 	topRight.position.y = 0;
 	bottomLeft.position.x = 0;
-	bottomLeft.position.x = localBounds->height;
+	bottomLeft.position.y = localBounds->height;
 	bottomRight.position.x = localBounds->width;
 	bottomRight.position.y = localBounds->height;
 
@@ -66,7 +64,7 @@ void SpriteBatch::end() {
 		_glyphPointers[i] = &_glyphs[i];
 	}
 
-	sortGlyphs();
+	//sortGlyphs();
 	createRenderBatches();
 }
 
@@ -75,9 +73,16 @@ void SpriteBatch::draw(Sprite& sprite) {
 }
 
 void SpriteBatch::renderBatch(sf::RenderWindow& window) {
-	for (size_t i = 0; i < _renderBatches.size(); i++) {
-		window.draw(&_vertices[_renderBatches[i].offset], _renderBatches[i].numVertices, sf::Triangles, _renderBatches[i].texture);
+	//std::cout << sizeof(_vertices) + (sizeof(sf::Vertex) * _vertices.size()) << "\n";
+	static sf::VertexBuffer triangles(sf::Triangles);
+	if (triangles.getVertexCount() < _vertices.size()) {
+		triangles.create(_vertices.size());
 	}
+	triangles.update(_vertices.data());
+	window.draw(triangles, _renderBatches[0].texture);
+	//for (size_t i = 0; i < _renderBatches.size(); i++) {
+		//window.draw(&_vertices[_renderBatches[i].offset], _renderBatches[i].numVertices, sf::Triangles, _renderBatches[i].texture);
+	//}
 }
 
 void SpriteBatch::createRenderBatches() {
@@ -131,16 +136,16 @@ void SpriteBatch::sortGlyphs() {
 
 	switch (_sortType) {
 	case GlyphSortType::BACK_TO_FRONT:
-		std::stable_sort(_glyphPointers.begin(), _glyphPointers.end(), compareBackToFront);
+		std::stable_sort(std::execution::par_unseq, _glyphPointers.begin(), _glyphPointers.end(), compareBackToFront);
 		break;
 	case GlyphSortType::FRONT_TO_BACK:
-		std::stable_sort(_glyphPointers.begin(), _glyphPointers.end(), compareFrontToBack);
+		std::stable_sort(std::execution::par_unseq, _glyphPointers.begin(), _glyphPointers.end(), compareFrontToBack);
 		break;
 	case GlyphSortType::TEXTURE:
-		std::stable_sort(_glyphPointers.begin(), _glyphPointers.end(), compareTexture);
+		std::stable_sort(std::execution::par_unseq, _glyphPointers.begin(), _glyphPointers.end(), compareTexture);
 		break;
 	case GlyphSortType::BTF_TEXTURE:
-		std::stable_sort(_glyphPointers.begin(), _glyphPointers.end(), compareBackToFront);
+		std::stable_sort(std::execution::par_unseq, _glyphPointers.begin(), _glyphPointers.end(), compareBTFTexture);
 	}
 }
 
@@ -157,7 +162,9 @@ bool SpriteBatch::compareTexture(Glyph* a, Glyph* b) {
 }
 
 bool SpriteBatch::compareBTFTexture(Glyph* a, Glyph* b) {
-	bool c = compareBackToFront(a, b);
-	if (c) return c;
-	return compareTexture(a, b);
+	if (a->depth == b->depth) {
+		return compareTexture(a, b);
+	} else {
+		return compareBackToFront(a, b);
+	}
 }

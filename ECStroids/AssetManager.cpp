@@ -73,14 +73,20 @@ entt::entity AssetManager::createPlayer() {
 }
 
 entt::entity AssetManager::createBullet(const entt::entity& shooter) {
+	static unsigned int test = 0;
+	test++;
 	auto entity = _registry->create();
 	static unsigned int bulletSize = 12.5;
 	auto& shooterSprite = _registry->get<Sprite>(shooter);
 	auto pos = shooterSprite.getTransform().transformPoint(shooterSprite.getLocalBounds().width, shooterSprite.getLocalBounds().height / 2);
+	unsigned int z = 1;
+	if (test > 1000) {
+		z = 0;
+	}
 	_registry->assign<Sprite>(entity, "media/Projectile.png",						//texture
 							  sf::IntRect(0, 0, 50, 50),							//texture dimensions
 							  sf::FloatRect(pos.x + bulletSize / 2, pos.y + bulletSize / 2, bulletSize, bulletSize),	//transform dimensions
-							  sf::Color::Green);									//color
+							  sf::Color::Green, z);									//color
 	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 0.0f);
 	//_registry->assign<Lifetime>(entity, 2);
 	_registry->assign<Collider>(entity, bulletSize/2);

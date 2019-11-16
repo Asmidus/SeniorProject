@@ -11,14 +11,14 @@ struct Sprite : public sf::Sprite {
 		this->setOrigin(w / 2, h / 2);
 		this->setPosition(x, y);
 	}
-	Sprite(const char* path, sf::IntRect spriteDim, sf::FloatRect transDim, sf::Color color = sf::Color::White) {
+	Sprite(const char* path, sf::IntRect spriteDim, sf::FloatRect transDim, sf::Color color = sf::Color::White, unsigned int zLevel = 0) {
 		this->setTexture(*TextureManager::LoadTexture(path));
 		this->setTextureRect(spriteDim);
 		this->setColor(color);
 		this->setOrigin(spriteDim.width / 2.0f, spriteDim.height / 2.0f);
 		this->setScale(transDim.width / spriteDim.width, transDim.height / spriteDim.height);
 		this->setPosition(transDim.left - transDim.width / 2, transDim.top - transDim.height / 2);
-		z = 0;
+		z = zLevel;
 	}
 
 	unsigned int z;

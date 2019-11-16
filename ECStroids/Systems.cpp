@@ -35,7 +35,7 @@ void Systems::drawSprites() {
 	//	++lightNum;
 	//}
 	//batch->begin(GlyphSortType::BACK_TO_FRONT);
-	batch.begin();
+	batch.begin(GlyphSortType::BTF_TEXTURE);
 	_registry->view<Sprite>().each([this](auto& sprite) {
 		//TextureManager::Draw(sprite.texture, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);
 		batch.draw(sprite);
