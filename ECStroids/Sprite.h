@@ -15,8 +15,8 @@ struct Sprite : public sf::Sprite {
 		this->setTexture(*TextureManager::LoadTexture(path));
 		this->setTextureRect(spriteDim);
 		this->setColor(color);
-		this->setScale(transDim.width / spriteDim.width, transDim.height / spriteDim.height);
 		this->setOrigin(spriteDim.width / 2.0f, spriteDim.height / 2.0f);
+		this->setScale(transDim.width / spriteDim.width, transDim.height / spriteDim.height);
 		this->setPosition(transDim.left - transDim.width / 2, transDim.top - transDim.height / 2);
 		z = 0;
 	}

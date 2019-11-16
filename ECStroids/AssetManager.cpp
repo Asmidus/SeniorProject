@@ -57,7 +57,12 @@ entt::entity AssetManager::createPlayer() {
 		else velocity.angular += 6;
 		return false;
 	};
-	keyMap[sf::Keyboard::Space] = [entity, cool](bool pressed) { if (pressed && cool->trigger(Event::shootBullet)) createBullet(entity); return true; };
+	keyMap[sf::Keyboard::Space] = [entity, cool](bool pressed) {
+		if (pressed && cool->trigger(Event::shootBullet))
+			for (int i = 0; i < 100; i++)
+				createBullet(entity);
+		return true;
+	};
 	_registry->assign<KeyListener>(entity, keyMap);
 
 	//hacky background for lights to render on
@@ -70,13 +75,13 @@ entt::entity AssetManager::createPlayer() {
 entt::entity AssetManager::createBullet(const entt::entity& shooter) {
 	auto entity = _registry->create();
 	static unsigned int bulletSize = 12.5;
-	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 0.0f);
 	auto& shooterSprite = _registry->get<Sprite>(shooter);
 	auto pos = shooterSprite.getTransform().transformPoint(shooterSprite.getLocalBounds().width, shooterSprite.getLocalBounds().height / 2);
 	_registry->assign<Sprite>(entity, "media/Projectile.png",						//texture
 							  sf::IntRect(0, 0, 50, 50),							//texture dimensions
-							  sf::FloatRect(pos.x, pos.y, bulletSize, bulletSize),	//transform dimensions
+							  sf::FloatRect(pos.x + bulletSize / 2, pos.y + bulletSize / 2, bulletSize, bulletSize),	//transform dimensions
 							  sf::Color::Green);									//color
+	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 0.0f);
 	//_registry->assign<Lifetime>(entity, 2);
 	_registry->assign<Collider>(entity, bulletSize/2);
 	_registry->assign<Light>(entity, glm::vec3(0, 1, 0), 50.0f);

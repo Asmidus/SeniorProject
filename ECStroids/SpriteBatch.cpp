@@ -8,25 +8,39 @@
 
 
 Glyph::Glyph(Sprite& sprite) {
-	topLeft.position = sf::Vector2f(0, 0);
-	topRight.position = sf::Vector2f(sprite.getLocalBounds().width, 0);
-	bottomLeft.position = sf::Vector2f(0, sprite.getLocalBounds().height);
-	bottomRight.position = sf::Vector2f(sprite.getLocalBounds().width, sprite.getLocalBounds().height);
+	static const sf::FloatRect* localBounds;
+	localBounds = &sprite.getLocalBounds();
+	topLeft.position.x = 0;
+	topLeft.position.y = 0;
+	topRight.position.x = localBounds->width;
+	topRight.position.y = 0;
+	bottomLeft.position.x = 0;
+	bottomLeft.position.x = localBounds->height;
+	bottomRight.position.x = localBounds->width;
+	bottomRight.position.y = localBounds->height;
 
-	topLeft.position = sprite.getTransform().transformPoint(topLeft.position);
-	topRight.position = sprite.getTransform().transformPoint(topRight.position);
-	bottomLeft.position = sprite.getTransform().transformPoint(bottomLeft.position);
-	bottomRight.position = sprite.getTransform().transformPoint(bottomRight.position);
+	static const sf::Transform* transform;
+	transform = &sprite.getTransform();
+	topLeft.position = transform->transformPoint(topLeft.position);
+	topRight.position = transform->transformPoint(topRight.position);
+	bottomLeft.position = transform->transformPoint(bottomLeft.position);
+	bottomRight.position = transform->transformPoint(bottomRight.position);
 
 	topLeft.color = sprite.getColor();
 	topRight.color = sprite.getColor();
 	bottomLeft.color = sprite.getColor();
 	bottomRight.color = sprite.getColor();
 
-	topLeft.texCoords = sf::Vector2f(sprite.getTextureRect().left, sprite.getTextureRect().top);
-	topRight.texCoords = sf::Vector2f(sprite.getTextureRect().left + sprite.getTextureRect().width, sprite.getTextureRect().top);
-	bottomLeft.texCoords = sf::Vector2f(sprite.getTextureRect().left, sprite.getTextureRect().top + sprite.getTextureRect().height);
-	bottomRight.texCoords = sf::Vector2f(sprite.getTextureRect().left + sprite.getTextureRect().width, sprite.getTextureRect().top + sprite.getTextureRect().height);
+	static const sf::IntRect* texRect;
+	texRect = &sprite.getTextureRect();
+	topLeft.texCoords.x = texRect->left;
+	topLeft.texCoords.y = texRect->top;
+	topRight.texCoords.x = texRect->left + texRect->width;
+	topRight.texCoords.y = texRect->top;
+	bottomLeft.texCoords.x = texRect->left;
+	bottomLeft.texCoords.y = texRect->top + texRect->height;
+	bottomRight.texCoords.x = texRect->left + texRect->width;
+	bottomRight.texCoords.y = texRect->top + texRect->height;
 
 	texture = sprite.getTexture();
 	depth = sprite.z;
