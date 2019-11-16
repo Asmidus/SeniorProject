@@ -35,9 +35,10 @@ void Systems::drawSprites() {
 	//	++lightNum;
 	//}
 	//batch->begin(GlyphSortType::BACK_TO_FRONT);
+	batch.begin();
 	_registry->view<Sprite>().each([this](auto& sprite) {
 		//TextureManager::Draw(sprite.texture, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);
-		_window->draw(sprite);
+		batch.draw(sprite);
 		//glm::vec4 t = glm::vec4(transform.rect.x, transform.rect.y, transform.rect.w, transform.rect.h);
 		//glm::vec4 u = sprite.getUV();
 		//if (transform.angle) {
@@ -53,6 +54,8 @@ void Systems::drawSprites() {
 		//	TextureManager::DrawText(text->texture, text->dest);
 		//}
 	});
+	batch.end();
+	batch.renderBatch(*_window);
 	//batch->end();
 	//batch->renderBatch();
 	//_registry->group<>(entt::get<Text>, entt::exclude<Transform>).each(

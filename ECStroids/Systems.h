@@ -1,6 +1,7 @@
 #pragma once
 #include "entt/entt.hpp"
 #include "InputManager.h"
+#include "SpriteBatch.h"
 #include <SFML/Graphics.hpp>
 
 class EventManager;
@@ -29,6 +30,7 @@ private:
 	EventManager* _events;
 	InputManager* _inputs;
 	Program* _program;
+	SpriteBatch batch;
 	sf::RenderWindow* _window;
 };
 

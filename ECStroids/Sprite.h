@@ -16,9 +16,12 @@ struct Sprite : public sf::Sprite {
 		this->setTextureRect(spriteDim);
 		this->setColor(color);
 		this->setScale(transDim.width / spriteDim.width, transDim.height / spriteDim.height);
-		this->setOrigin(transDim.width / 2, transDim.height / 2);
+		this->setOrigin(spriteDim.width / 2.0f, spriteDim.height / 2.0f);
 		this->setPosition(transDim.left - transDim.width / 2, transDim.top - transDim.height / 2);
+		z = 0;
 	}
+
+	unsigned int z;
 //	Sprite() = default;
 //
 //	Sprite(const char* path) {

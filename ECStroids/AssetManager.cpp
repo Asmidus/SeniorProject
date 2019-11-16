@@ -24,7 +24,7 @@ entt::entity AssetManager::createPlayer() {
 	Velocity* vel = &(_registry->assign<Velocity>(entity, glm::vec2(1, 0), 3, 3));
 	_registry->assign<Sprite>(entity, "media/ECSplayer.png",
 							  sf::IntRect(0, 0, 50, 50),
-							  sf::FloatRect(400, 400, 50, 50));
+							  sf::FloatRect(400, 400, shipSize, shipSize));
 	Cooldown* cool = &(_registry->assign<Cooldown>(entity, cooldowns));
 	_registry->assign<Animation>(entity, 5, 0.08, false);
 	_registry->assign<Health>(entity, 5.0f);
@@ -77,7 +77,7 @@ entt::entity AssetManager::createBullet(const entt::entity& shooter) {
 							  sf::IntRect(0, 0, 50, 50),							//texture dimensions
 							  sf::FloatRect(pos.x, pos.y, bulletSize, bulletSize),	//transform dimensions
 							  sf::Color::Green);									//color
-	_registry->assign<Lifetime>(entity, 2);
+	//_registry->assign<Lifetime>(entity, 2);
 	_registry->assign<Collider>(entity, bulletSize/2);
 	_registry->assign<Light>(entity, glm::vec3(0, 1, 0), 50.0f);
 	_registry->assign<entt::tag<"Player"_hs>>(entity);
