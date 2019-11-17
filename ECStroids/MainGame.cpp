@@ -14,8 +14,8 @@
 
 static GLuint texLoc, camLoc;
 
-MainGame::MainGame() : _screenWidth(1000), _screenHeight(1000), _gameDims(750, 750),
-_gameState(GameState::PLAY), _fpsLimiter(200.0f), _fps(120.0f),
+MainGame::MainGame() : _screenWidth(750), _screenHeight(750), _gameDims(750, 750),
+_gameState(GameState::PLAY), _fpsLimiter(200.0f), _fps(120.0f), _frameTime(0),
 _events(&_registry), _systems(&_registry, &_events, &_inputManager) {}
 
 MainGame::~MainGame() {
@@ -32,8 +32,8 @@ void MainGame::initSystems() {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
 	_window.create("ECStroids", _screenWidth, _screenHeight, 0);
-	_systems.init(&_program, _gameDims.x, _gameDims.y);
-	glClearColor(0.f, 0.f, 0.f, 1.0f);
+	_systems.init(&_program, &_camera, _gameDims.x, _gameDims.y);
+	glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
 	_camera.init(_screenWidth, _screenHeight);
 	_camera.setPosition(_gameDims / 2.0f);
 	_camera.setScale(_screenHeight/_gameDims.y);

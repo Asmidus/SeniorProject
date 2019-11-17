@@ -21,7 +21,7 @@ entt::entity AssetManager::createPlayer() {
 	static unsigned int shipSize = 30;
 	std::unordered_map<unsigned int, std::function<bool(bool)>> keyMap;
 	std::unordered_map<Event::Type, float> cooldowns;
-	cooldowns[Event::Type::shootBullet] = 0.002f;
+	cooldowns[Event::Type::shootBullet] = 0.75f;
 	//cooldowns[Event::Type::collision] = 1.5f;
 	Velocity* vel = &(_registry->assign<Velocity>(entity, glm::vec2(1, 0), 3, 3));
 	_registry->assign<Sprite>(entity, "media/ECSplayer.png", 50, 50);
@@ -35,6 +35,7 @@ entt::entity AssetManager::createPlayer() {
 	_registry->assign<Health>(entity, 5.0f);
 	_registry->assign<Collider>(entity, shipSize/3);
 	_registry->assign<entt::tag<"Player"_hs>>(entity);
+	_registry->assign<entt::tag<"Occluder"_hs>>(entity);
 	keyMap[SDLK_w] = [entity](bool pressed) {
 		auto& velocity = _registry->get<Velocity>(entity);
 		auto& animation = _registry->get<Animation>(entity);
@@ -66,9 +67,9 @@ entt::entity AssetManager::createPlayer() {
 	_registry->assign<KeyListener>(entity, keyMap);
 
 	//hacky background for lights to render on
-	auto entity2 = _registry->create();
-	_registry->assign<Sprite>(entity2, "media/Button.png", 160, 100, glm::vec3(10, 10, 10));
-	_registry->assign<Transform>(entity2, 0, 0, *_gameWidth, *_gameHeight, 3);
+	//auto entity2 = _registry->create();
+	//_registry->assign<Sprite>(entity2, "media/Button.png", 160, 100, glm::vec3(10, 10, 10));
+	//_registry->assign<Transform>(entity2, 0, 0, *_gameWidth, *_gameHeight, 3);
 	return entity;
 }
 
@@ -86,7 +87,7 @@ entt::entity AssetManager::createBullet(const entt::entity& shooter) {
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50, glm::vec3(0, 255, 0));
 	//_registry->assign<Lifetime>(entity, 2);
 	_registry->assign<Collider>(entity, bulletSize/2);
-	_registry->assign<Light>(entity, glm::vec3(0, 1, 0), 50.0f);
+	_registry->assign<Light>(entity, glm::vec3(0, 1, 0), 750/2.0f);
 	_registry->assign<entt::tag<"Player"_hs>>(entity);
 	return entity;
 }

@@ -7,7 +7,7 @@
 //This class is responsible for handling and processing events
 class EventManager {
 public:
-	EventManager(entt::registry* registry) : _registry(registry) {}
+	EventManager(entt::registry* registry) : _registry(registry), _dt(0) {}
 	~EventManager();
 
 	//Register an event to be processed

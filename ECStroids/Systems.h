@@ -2,6 +2,7 @@
 #include "entt/entt.hpp"
 #include <GL/glew.h>
 #include "InputManager.h"
+#include "LightEngine.h"
 
 class EventManager;
 class SpriteBatch;
@@ -10,9 +11,9 @@ class Program;
 class Systems
 {
 public:
-	Systems(entt::registry* registry, EventManager* events, InputManager* inputs) : _registry(registry), _events(events), _inputs(inputs) {}
+	Systems(entt::registry* registry, EventManager* events, InputManager* inputs) : _registry(registry), _events(events), _inputs(inputs), _camera(nullptr), _program(nullptr), _gameWidth(0), _gameHeight(0), _lightEngine(nullptr) {}
 	~Systems() {}
-	void init(Program* program, float screenWidth, float screenHeight) { _gameWidth = screenWidth; _gameHeight = screenHeight; _program = program; }
+	void init(Program* program, Camera* camera, float screenWidth, float screenHeight) { _gameWidth = screenWidth; _gameHeight = screenHeight; _program = program; _camera = camera; }
 	void updateDelta(float dt) { _dt = dt; }
 	void drawSprites(SpriteBatch* batch);
 	void updateAnimations();
@@ -28,5 +29,7 @@ private:
 	EventManager* _events;
 	InputManager* _inputs;
 	Program* _program;
+	Camera* _camera;
+	LightEngine* _lightEngine;
 };
 

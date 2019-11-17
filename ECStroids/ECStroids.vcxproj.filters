@@ -63,6 +63,9 @@
     <ClCompile Include="SpriteBatch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LightEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AssetManager.h">
@@ -151,6 +154,9 @@
     </ClInclude>
     <ClInclude Include="Light.h">
       <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="LightEngine.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

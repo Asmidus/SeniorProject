@@ -36,7 +36,6 @@ private:
 	Window _window;
 	Program _program;
 	Camera _camera;
-	SDL_Renderer* _renderer;
 	unsigned int _screenWidth;
 	unsigned int _screenHeight;
 	glm::vec2 _gameDims;

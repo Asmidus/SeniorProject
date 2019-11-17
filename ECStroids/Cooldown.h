@@ -24,8 +24,10 @@ struct Cooldown {
 
 	bool trigger(Event::Type type) {
 		if (coolingDown.find(type) == coolingDown.end()) {
-			coolingDown[type] = events[type];
-			return true;
+			if (events.find(type) != events.end()) {
+				coolingDown[type] = events[type];
+				return true;
+			}
 		}
 		return false;
 	}

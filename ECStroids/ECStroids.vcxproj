@@ -152,6 +152,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="LightEngine.cpp" />
     <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainGame.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="KeyListener.h" />
     <ClInclude Include="Lifetime.h" />
     <ClInclude Include="Light.h" />
+    <ClInclude Include="LightEngine.h" />
     <ClInclude Include="lodepng.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="MouseListener.h" />

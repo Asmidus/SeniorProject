@@ -15,13 +15,15 @@ void Program::compileShaders(const char* vertexFile, const char* fragFile) {
 	_id = glCreateProgram();
 
 	//Create the vertex shader object, and store its ID
-	_vertex = glCreateShader(GL_VERTEX_SHADER);
-	if (!_vertex) throw;
+	if (!std::string(vertexFile).empty()) {
+		_vertex = glCreateShader(GL_VERTEX_SHADER);
+		if (!_vertex) throw;
+		compileShader(vertexFile, _vertex);
+	}
 
 	//Create the fragment shader object, and store its ID
 	_frag = glCreateShader(GL_FRAGMENT_SHADER);
 	if (!_frag) throw;
-	compileShader(vertexFile, _vertex);
 	compileShader(fragFile, _frag);
 }
 
@@ -68,7 +70,7 @@ void Program::compileShader(const char* fileName, GLuint id) {
 
 		//Print error log and quit
 		std::printf("%s\n", &(errorLog[0]));
-		throw;
+ 		throw;
 	}
 }
 
@@ -116,7 +118,7 @@ void Program::addAttribute(const char* name) {
 
 GLint Program::getUniformLocation(const char* name) {
 	GLint location = glGetUniformLocation(_id, name);
-	if (location == GL_INVALID_INDEX) throw;
+	//if (location == GL_INVALID_INDEX) throw;
 	return location;
 }
 

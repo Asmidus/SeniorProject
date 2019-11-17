@@ -19,35 +19,27 @@
 
 void Systems::drawSprites(SpriteBatch* batch) {
 	updateAnimations();
-	static const int MAX_LIGHTS = 128;
-	static GLfloat rad[MAX_LIGHTS];
-	static GLfloat pos[MAX_LIGHTS*2];
-	static GLfloat col[MAX_LIGHTS*3];
-	unsigned int lightNum = 0;
-	for (auto& entity : _registry->group<Light>(entt::get<Transform>)) {
-		if (lightNum >= 128) break;
-		auto [light, transform] = _registry->get<Light, Transform>(entity);
-		glm::vec2 lightPos = light.pos * glm::vec2(transform.rect.w, transform.rect.h);
-		float angle = transform.angle;
-		auto center = transform.center * glm::vec2(transform.rect.w, transform.rect.h);
-		float rotatedX = cos(angle) * (lightPos.x - center.x) - sin(angle) * (lightPos.y - center.y) + center.x + transform.rect.x;
-		float rotatedY = sin(angle) * (lightPos.x - center.x) + cos(angle) * (lightPos.y - center.y) + center.y + transform.rect.y;
-		rad[lightNum] = light.radius;
-		pos[2 * lightNum] = rotatedX;
-		pos[2 * lightNum + 1] = rotatedY;
-		col[3 * lightNum] = light.color.r;
-		col[3 * lightNum + 1] = light.color.g;
-		col[3 * lightNum + 2] = light.color.b;
-		++lightNum;
+	if (!_lightEngine) {
+		_lightEngine = new LightEngine();
 	}
-	static GLint numLights = _program->getUniformLocation("numLights");
-	static GLint lightLoc = _program->getUniformLocation("lightLoc");
-	static GLint lightCol = _program->getUniformLocation("lightCol");
-	static GLint lightRad = _program->getUniformLocation("lightRad");
-	glUniform1i(numLights, lightNum);
-	glUniform1fv(lightRad, lightNum, rad);
-	glUniform2fv(lightLoc, lightNum, pos);
-	glUniform3fv(lightCol, lightNum, col);
+	_lightEngine->UpdateMatrix(_camera->getCameraMatrix());
+	for (auto& entity : _registry->group<Light>(entt::get<Transform>)) {
+		auto [light, transform] = _registry->get<Light, Transform>(entity);
+		for (auto& entity : _registry->view<entt::tag<"Occluder"_hs>>()) {
+			auto [sprite, pt] = _registry->get<Sprite, Transform>(entity);
+			_lightEngine->DrawHull(&light, &transform, &sprite, &pt);
+			glViewport(0, 0, 750, 750);
+		}
+		auto vec = TextureManager::GetRenderTextures(light.radius * 2);
+		_program->unuse();
+		_lightEngine->CreateShadows(&light);
+		_program->use();
+		_lightEngine->Draw(&light, &transform);
+		//TextureManager::DrawTexture(std::get<0>(TextureManager::LoadTexture("media/Button.png")));
+		//TextureManager::DrawTexture(light.shadowTex);
+		//TextureManager::DrawTexture(vec[0].second);
+		TextureManager::ClearTexture(vec[0].first);
+	}
 	batch->begin(GlyphSortType::BACK_TO_FRONT);
 	_registry->group<Sprite, Transform>().each([batch](auto entity, auto& sprite, auto& transform) {
 		//TextureManager::Draw(sprite.texture, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);
@@ -126,19 +118,19 @@ void Systems::moveEntities() {
 		//update the transform of the entity
 		transform.updatePos(velocity.currVel * 120.0f * _dt);
 	});
-	_registry->view<Transform>().each(
-		[this](auto& transform) {
-			if (transform.rect.x < -transform.rect.w) {
-				transform.rect.x = _gameWidth;
-			} else if(transform.rect.x > _gameWidth) {
-				transform.rect.x = -transform.rect.w;
-			}
-			if (transform.rect.y < -transform.rect.h) {
-				transform.rect.y = _gameHeight;
-			} else if (transform.rect.y > _gameHeight) {
-				transform.rect.y = -transform.rect.h;
-			}
-		});
+	//_registry->view<Transform>().each(
+	//	[this](auto& transform) {
+	//		if (transform.rect.x < -transform.rect.w) {
+	//			transform.rect.x = _gameWidth;
+	//		} else if(transform.rect.x > _gameWidth) {
+	//			transform.rect.x = -transform.rect.w;
+	//		}
+	//		if (transform.rect.y < -transform.rect.h) {
+	//			transform.rect.y = _gameHeight;
+	//		} else if (transform.rect.y > _gameHeight) {
+	//			transform.rect.y = -transform.rect.h;
+	//		}
+	//	});
 }
 
 void Systems::checkCollisions() {
