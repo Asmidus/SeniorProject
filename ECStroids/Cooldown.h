@@ -26,8 +26,8 @@ struct Cooldown {
 		if (coolingDown.find(type) == coolingDown.end()) {
 			if (events.find(type) != events.end()) {
 				coolingDown[type] = events[type];
-				return true;
 			}
+			return true;
 		}
 		return false;
 	}

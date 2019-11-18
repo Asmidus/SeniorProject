@@ -74,12 +74,12 @@ void main()
 	float light = dist <= shadowMapDistance ? 1.0 : 0.0;
 	vec4 result = vec4(light, light, light, 1);
 
-	float x = dist * 1.0;
+	float x = dist * 1;
 	result.a = 1.0 / (2 * (x + 0.37)) - 0.37;
-	//float distance = (dist) + 1.5;
-	//float attenuation = 1 / pow(distance, 1.5);
-	//attenuation = max(attenuation, 0.2);
-	//vec4 lightCol = vec4(attenuation, attenuation, attenuation, 1) * lightColor;
+	//result.a = 2*((0.5 / pow(x + 1, 4)));
+	//result.a = 0.2;
+	//float attenuation = 1 / pow(dist + 1, 2);
+	//vec4 lightCol = vec4(lightColor.rgb, attenuation);
 	result *= lightColor;
 	color = result;
 }

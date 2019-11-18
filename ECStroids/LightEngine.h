@@ -15,6 +15,8 @@ public:
 	virtual ~LightEngine(void);
 
 	void LoadShaders(void);
+	void Begin(const Light& light, const Transform& transform);
+	void End();
 	void DrawHull(Light* light, Transform* lightTransform, Sprite* sprite, Transform* transform);
 	void Draw(GLuint& fbo, Light* light, GLuint texture);
 	void Draw(Light* light, Transform* lightTransform);
@@ -24,12 +26,15 @@ public:
 	void Clean();
 
 	// Shaders
+	Program hullShader;
 	Program distortShader;
 	Program reduceShader;
 	Program shadowShader;
 	Program blurVShader;
 	Program blurHShader;
+	Camera _camera;
 
+	GLuint hPos;
 	GLuint dPos;
 	GLuint rPos;
 	GLuint sPos;

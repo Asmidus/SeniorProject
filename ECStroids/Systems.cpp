@@ -25,21 +25,27 @@ void Systems::drawSprites(SpriteBatch* batch) {
 	_lightEngine->UpdateMatrix(_camera->getCameraMatrix());
 	for (auto& entity : _registry->group<Light>(entt::get<Transform>)) {
 		auto [light, transform] = _registry->get<Light, Transform>(entity);
+		//_camera->setPosition(glm::vec2(transform.rect.x + transform.rect.w / 2, transform.rect.y + transform.rect.h / 2));
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		_program->unuse();
+		_lightEngine->Begin(light, transform);
 		for (auto& entity : _registry->view<entt::tag<"Occluder"_hs>>()) {
 			auto [sprite, pt] = _registry->get<Sprite, Transform>(entity);
 			_lightEngine->DrawHull(&light, &transform, &sprite, &pt);
-			glViewport(0, 0, 750, 750);
 		}
+		_lightEngine->End();
+		//glViewport(0, 0, 750, 750);
 		auto vec = TextureManager::GetRenderTextures(light.radius * 2);
-		_program->unuse();
 		_lightEngine->CreateShadows(&light);
 		_program->use();
-		_lightEngine->Draw(&light, &transform);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		//_lightEngine->Draw(&light, &transform);
 		//TextureManager::DrawTexture(std::get<0>(TextureManager::LoadTexture("media/Button.png")));
 		//TextureManager::DrawTexture(light.shadowTex);
-		//TextureManager::DrawTexture(vec[0].second);
+		TextureManager::DrawTexture(vec[0].second);
 		TextureManager::ClearTexture(vec[0].first);
 	}
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	batch->begin(GlyphSortType::BACK_TO_FRONT);
 	_registry->group<Sprite, Transform>().each([batch](auto entity, auto& sprite, auto& transform) {
 		//TextureManager::Draw(sprite.texture, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);
@@ -118,19 +124,19 @@ void Systems::moveEntities() {
 		//update the transform of the entity
 		transform.updatePos(velocity.currVel * 120.0f * _dt);
 	});
-	//_registry->view<Transform>().each(
-	//	[this](auto& transform) {
-	//		if (transform.rect.x < -transform.rect.w) {
-	//			transform.rect.x = _gameWidth;
-	//		} else if(transform.rect.x > _gameWidth) {
-	//			transform.rect.x = -transform.rect.w;
-	//		}
-	//		if (transform.rect.y < -transform.rect.h) {
-	//			transform.rect.y = _gameHeight;
-	//		} else if (transform.rect.y > _gameHeight) {
-	//			transform.rect.y = -transform.rect.h;
-	//		}
-	//	});
+	_registry->view<Transform>().each(
+		[this](auto& transform) {
+		if (transform.rect.x < -transform.rect.w) {
+			transform.rect.x = _gameWidth;
+		} else if (transform.rect.x > _gameWidth) {
+			transform.rect.x = -transform.rect.w;
+		}
+		if (transform.rect.y < -transform.rect.h) {
+			transform.rect.y = _gameHeight;
+		} else if (transform.rect.y > _gameHeight) {
+			transform.rect.y = -transform.rect.h;
+		}
+	});
 }
 
 void Systems::checkCollisions() {
@@ -145,26 +151,26 @@ void Systems::checkCollisions() {
 		static const std::vector<unsigned int> quads = { 0, 1, 2, 3 };
 		auto colliders = _registry->group<Collider>(entt::get<Transform>);
 		std::for_each(std::execution::par_unseq, quads.begin(), quads.end(), [=](auto i) {
-			std::vector<const entt::entity*> quadrants;
-			auto test = &quadrants;
+			std::vector<const entt::entity*> quadrant;
+			auto test = &quadrant;
 			//For some reason the debug compiler needs quadDims to be used in this lambda so it can be used in the next one
 			//hopefully this line is just optimized out in release
 			quadDims;
 			std::shared_ptr<std::mutex> m2 = std::make_shared<std::mutex>();
 			for (auto& entity : colliders) {
 				auto& transform = _registry->get<Transform>(entity);
-				if (transform.rect.x + transform.rect.w > quadDims[i].x&& transform.rect.x < quadDims[i].x + _gameWidth / 2 &&
-					transform.rect.y + transform.rect.h > quadDims[i].y&& transform.rect.y < quadDims[i].y + _gameHeight / 2) {
+				if (transform.rect.x + transform.rect.w > quadDims[i].x && transform.rect.x < quadDims[i].x + _gameWidth / 2 &&
+					transform.rect.y + transform.rect.h > quadDims[i].y && transform.rect.y < quadDims[i].y + _gameHeight / 2) {
 					std::lock_guard<std::mutex> lock{ *m2 };
 					(*test).push_back(&entity);
 				}
 			}
-			for (unsigned int j = 0; j < quadrants.size(); j++) {
-				auto entity1 = quadrants[j];
+			for (unsigned int j = 0; j < quadrant.size(); j++) {
+				auto entity1 = quadrant[j];
 				//if (_registry->has<entt::tag<"Player"_hs>>(*entity1)) {
 					auto [trans1, col1] = _registry->get<Transform, Collider>(*entity1);
-					for (unsigned int k = j+1; k < quadrants.size(); k++) {
-						auto entity2 = quadrants[k];
+					for (unsigned int k = j+1; k < quadrant.size(); k++) {
+						auto entity2 = quadrant[k];
 						//if (_registry->has<entt::tag<"Enemy"_hs>>(*entity2)) {
 							auto [trans2, col2] = _registry->get<Transform, Collider>(*entity2);
 							if (col1.circular) {

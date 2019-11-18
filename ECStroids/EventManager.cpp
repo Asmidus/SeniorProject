@@ -104,7 +104,10 @@ void EventManager::processCollision(Event& event) {
 		dir = glm::vec2(rand()%200-100, rand()%200-100);
 	}
 	auto speed = glm::length(v2.currVel);
-	float depth = c1.radius + c2.radius - glm::length(dir) + 2;
+	float depth = c1.radius + c2.radius - glm::length(dir) + 0.5;
+	if (e1Pos == e2Pos) {
+		depth += 1;
+	}
 	glm::vec2 displace = glm::normalize(dir) * depth;
 	v2.currVel = -glm::normalize(dir) * speed;
 	if (!_registry->has<Health>(p)) {

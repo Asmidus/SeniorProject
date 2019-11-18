@@ -33,8 +33,9 @@ void Window::create(std::string windowName, int screenWidth, int screenHeight, u
 	// Enable alpha blend
 	//glDisable(GL_CULL_FACE);
 	//glDisable(GL_DEPTH_TEST);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	//glDisable(GL_ALPHA_TEST);
 }
 

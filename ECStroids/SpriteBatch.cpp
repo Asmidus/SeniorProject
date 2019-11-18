@@ -76,7 +76,7 @@ Glyph::Glyph(const glm::vec4& destRect, const glm::vec4& uvRect,
 	topRight.pos.x = destRect.x + tr.x;
 	topRight.pos.y = destRect.y + tr.y;
 	topRight.uv.x = uvRect.x + uvRect.z;
-	topRight.uv.t = uvRect.y + uvRect.w;
+	topRight.uv.y = uvRect.y + uvRect.w;
 }
 
 glm::vec2 Glyph::rotatePoint(const glm::vec2& pos, float angle) {

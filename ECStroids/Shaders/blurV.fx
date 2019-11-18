@@ -1,21 +1,29 @@
 // Thanks to http://www.alpha-arts.net/blog/articles/view/30/shader-de-blur
 
-#version 120
+#version 130
 
-uniform sampler2D texture;
+in vec2 fragmentPosition;
+in vec4 fragmentColor;
+in vec2 fragmentUV;
+
+out vec4 color;
+
+uniform sampler2D samp;
 
 void main()
 {
 	vec2 off = vec2(0.0, 0.008);
 
-	gl_FragColor = gl_Color * (
-		texture2D(texture, gl_TexCoord[0].xy + off * 1.0)  * 0.06 + 
-		texture2D(texture, gl_TexCoord[0].xy + off * 0.75) * 0.09 +
-		texture2D(texture, gl_TexCoord[0].xy + off * 0.5)  * 0.12 +
-		texture2D(texture, gl_TexCoord[0].xy + off * 0.25) * 0.15 +
-		texture2D(texture, gl_TexCoord[0].xy) * 0.16 +
-		texture2D(texture, gl_TexCoord[0].xy - off * 1.0)  * 0.06 +
-		texture2D(texture, gl_TexCoord[0].xy - off * 0.75) * 0.09 +
-		texture2D(texture, gl_TexCoord[0].xy - off * 0.5)  * 0.12 +
-		texture2D(texture, gl_TexCoord[0].xy - off * 0.25) * 0.15 );
+	float test = texture(samp, fragmentUV).a;
+
+	color = vec4(fragmentColor.rgb * (
+		texture(samp, fragmentUV + off * 1.0).rgb * 0.06 +
+		texture(samp, fragmentUV + off * 0.75).rgb * 0.09 +
+		texture(samp, fragmentUV + off * 0.5).rgb * 0.12 +
+		texture(samp, fragmentUV + off * 0.25).rgb * 0.15 +
+		texture(samp, fragmentUV).rgb * 0.16 +
+		texture(samp, fragmentUV - off * 1.0).rgb * 0.06 +
+		texture(samp, fragmentUV - off * 0.75).rgb * 0.09 +
+		texture(samp, fragmentUV - off * 0.5).rgb * 0.12 +
+		texture(samp, fragmentUV - off * 0.25).rgb * 0.15), sqrt(test));
 }

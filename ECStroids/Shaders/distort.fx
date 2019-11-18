@@ -8,6 +8,8 @@ in vec2 fragmentPosition;
 in vec4 fragmentColor;
 in vec2 fragmentUV;
 
+out vec4 color;
+
 float BlackOrDistance(vec2 TexCoord)
 {
 	// Calcule la distance
@@ -43,7 +45,7 @@ vec4 Distort(vec2 TexCoord)
 
 void main()
 {
-	gl_FragColor = Distort(fragmentUV);
+	color = Distort(fragmentUV);
 	//gl_FragColor = texture(samp, fragmentUV);
 	//gl_FragColor = vec4(1, 1, 1, 1);
 }

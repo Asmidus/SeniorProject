@@ -16,6 +16,13 @@ LightEngine::LightEngine(void) {
 LightEngine::~LightEngine(void) {}
 
 void LightEngine::LoadShaders(void) {
+	hullShader.compileShaders("Shaders/textureShading.vert", "Shaders/textureShading.frag");
+	hullShader.addAttribute("vertexPosition");
+	hullShader.addAttribute("vertexColor");
+	hullShader.addAttribute("vertexUV");
+	hullShader.link();
+	hPos = hullShader.getUniformLocation("P");
+
 	// Distort shader
 	distortShader.compileShaders("Shaders/textureShading.vert", "Shaders/distort.fx");
 	distortShader.addAttribute("vertexPosition");
@@ -66,8 +73,32 @@ void LightEngine::LoadShaders(void) {
 	blurHShader.addAttribute("vertexUV");
 	blurHShader.link();
 	bhPos = blurHShader.getUniformLocation("P");
+	_camera.init(1, 1);
+	//_camera.setPosition();
 	//blurHShader.loadFromFile("blurH.fx", sf::Shader::Fragment);
 	//blurHShader.setParameter("texture", sf::Shader::CurrentTexture);
+}
+
+void LightEngine::Begin(const Light& light,  const Transform& transform) {
+	unsigned int size = light.radius * 2;
+	hullShader.use();
+	_camera.init(size, size);
+	//_camera.setPosition(0, 0);
+	//_camera.setScale(size/750);
+	_camera.setPosition(glm::vec2(transform.rect.x + transform.rect.w / 2, size - transform.rect.y - transform.rect.h / 2));
+	//_camera.setPosition(glm::vec2(size / 2.0, size / 2.0));
+	//_camera.setPosition(glm::vec2( -transform.rect.x - transform.rect.w / 2 + size / 2, -transform.rect.y - transform.rect.h / 2 + size / 2));
+	_camera.update();
+	auto& matrix = _camera.getCameraMatrix();
+	glUniformMatrix4fv(hPos, 1, GL_FALSE, &matrix[0][0]);
+	//glViewport(-transform.rect.x - transform.rect.w / 2 + size / 2, -transform.rect.y - transform.rect.h / 2 + size / 2, size, size);
+	auto info = TextureManager::GetRenderTextures(size);
+	glBindFramebuffer(GL_FRAMEBUFFER, info[0].first);
+}
+
+void LightEngine::End() {
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	hullShader.unuse();
 }
 
 glm::vec2 rotatePoint(const glm::vec2& pos, float angle) {
@@ -77,7 +108,6 @@ glm::vec2 rotatePoint(const glm::vec2& pos, float angle) {
 	return newv;
 }
 
-// Dessiner les obstables
 void LightEngine::DrawHull(Light* light, Transform* lightTransform, Sprite* sprite, Transform* transform) {
 	if (_vbo == 0) {
 		glGenBuffers(1, &_vbo);
@@ -104,10 +134,10 @@ void LightEngine::DrawHull(Light* light, Transform* lightTransform, Sprite* spri
 	tr.y = tlDims.y;
 
 	// Rotate the points
-	tl = rotatePoint(tl, -transform->angle) - tlDims;
-	bl = rotatePoint(bl, -transform->angle) - tlDims;
-	br = rotatePoint(br, -transform->angle) - tlDims;
-	tr = rotatePoint(tr, -transform->angle) - tlDims;
+	tl = rotatePoint(tl, transform->angle) - tlDims;
+	bl = rotatePoint(bl, transform->angle) - tlDims;
+	br = rotatePoint(br, transform->angle) - tlDims;
+	tr = rotatePoint(tr, transform->angle) - tlDims;
 	auto info = TextureManager::GetRenderTextures(light->radius * 2);
 	static Vertex vertexData[6];
 	//int width = transform->rect.w, height = transform->rect.h;
@@ -116,22 +146,22 @@ void LightEngine::DrawHull(Light* light, Transform* lightTransform, Sprite* spri
 
 	auto uv = sprite->getUV();
 	topLeft.pos.x = transform->rect.x + tl.x;
-	topLeft.pos.y = size - transform->rect.y + tl.y - transform->rect.h;
+	topLeft.pos.y = size - transform->rect.y - tl.y;
 	topLeft.uv.x = uv.x;
 	topLeft.uv.y = uv.y + uv.w;
 
 	bottomLeft.pos.x = transform->rect.x + bl.x;
-	bottomLeft.pos.y = size - transform->rect.y + bl.y - transform->rect.h;
+	bottomLeft.pos.y = size - transform->rect.y - bl.y;
 	bottomLeft.uv.x = uv.x;
 	bottomLeft.uv.y = uv.y;
 
 	bottomRight.pos.x = transform->rect.x + br.x;
-	bottomRight.pos.y = size - transform->rect.y + br.y - transform->rect.h;
+	bottomRight.pos.y = size - transform->rect.y - br.y;
 	bottomRight.uv.x = uv.x + uv.z;
 	bottomRight.uv.y = uv.y;
 
 	topRight.pos.x = transform->rect.x + tr.x;
-	topRight.pos.y = size - transform->rect.y + tr.y - transform->rect.h;
+	topRight.pos.y = size - transform->rect.y - tr.y;
 	topRight.uv.x = uv.x + uv.z;
 	topRight.uv.y = uv.y + uv.w;
 
@@ -143,8 +173,8 @@ void LightEngine::DrawHull(Light* light, Transform* lightTransform, Sprite* spri
 	vertexData[4] = topRight;
 	vertexData[5] = bottomRight;
 
-	glBindFramebuffer(GL_FRAMEBUFFER, info[0].first);
-	glViewport(-lightTransform->rect.x + size / 2, -lightTransform->rect.y + size / 2, size, size);
+	//glBindFramebuffer(GL_FRAMEBUFFER, info[0].first);
+	//glViewport(-lightTransform->rect.x - lightTransform->rect.w / 2 + size / 2, -lightTransform->rect.y - lightTransform->rect.h / 2 + size / 2, size, size);
 	//Tell opengl to bind our vertex buffer object
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	//Upload the data to the GPU
@@ -175,8 +205,6 @@ void LightEngine::DrawHull(Light* light, Transform* lightTransform, Sprite* spri
 	//Unbind the VBO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//light->textures->casterTex.setView(light->view);
-	//light->textures->casterTex.draw(hull);
 }
 
 void LightEngine::Draw(GLuint& fbo, Light* light, GLuint texture) {
@@ -260,7 +288,7 @@ void LightEngine::Draw(Light* light, Transform* lightTransform) {
 	static Vertex vertexData[6];
 	int size = light->radius * 2;
 	int width = size, height = size;
-	int x = lightTransform->rect.x - size / 2, y = lightTransform->rect.y - size / 2;
+	int x = lightTransform->rect.x + lightTransform->rect.w/2 - size / 2, y = lightTransform->rect.y + lightTransform->rect.h/2 - size / 2;
 	//First Triangle
 	vertexData[0].pos = glm::vec2(x + width, y + height);
 	vertexData[0].setUV(1.0f, 1.0f);
@@ -311,38 +339,25 @@ void LightEngine::Draw(Light* light, Transform* lightTransform) {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-// Crée les ombres
 void LightEngine::CreateShadows(Light* light) {
 	auto info = TextureManager::GetRenderTextures(light->radius * 2);
-	// Fini le rendu de la casterTexture
-	//light->textures->casterTex.display();
-
-	// Applique le distort shader
-	//mShaderStates.shader = &distortShader;
-	//glViewport(400, 400, light->radius * 2, light->radius * 2);
+	auto& matrix = _camera.getCameraMatrix();
 	distortShader.use();
-	auto test2 = _matrix;
-	glUniformMatrix4fv(dPos, 1, GL_FALSE, &test2[0][0]);
-	//TextureManager::ClearTexture(info[1].first);
+	glUniformMatrix4fv(dPos, 1, GL_FALSE, &matrix[0][0]);
 	Draw(info[1].first, light, info[0].second);
-	//light->textures->distortTex.draw(light->textures->casterSprite, mShaderStates);
-	//light->textures->distortTex.display();
 	distortShader.unuse();
-	// Applique le reduce shader
+
 	reduceShader.use();
 	static GLuint reduceRenderTargetSize = reduceShader.getUniformLocation("renderTargetSize");
-	glUniformMatrix4fv(rPos, 1, GL_FALSE, &_matrix[0][0]);
+	glUniformMatrix4fv(rPos, 1, GL_FALSE, &matrix[0][0]);
 	glUniform1f(reduceRenderTargetSize, light->radius * 2.0f);
 	Draw(info[2].first, light, info[1].second);
 	reduceShader.unuse();
-	//reduceShader.setParameter("renderTargetSize", light->mLightRadius * 2.f);
-	//mShaderStates.shader = &reduceShader;
-	//light->textures->reduceTex.draw(light->textures->distortSprite, mShaderStates);
 
-	//// Applique le shadow shader
 	static GLuint reduce = shadowShader.getUniformLocation("reduce");
 	static GLuint renderTargetSize = shadowShader.getUniformLocation("renderTargetSize");
 	static GLuint lightColor = shadowShader.getUniformLocation("lightColor");
+
 	shadowShader.use();
 	glActiveTexture(GL_TEXTURE0 + 1); // Texture unit 1
 	glBindTexture(GL_TEXTURE_2D, info[2].second);
@@ -351,33 +366,27 @@ void LightEngine::CreateShadows(Light* light) {
 	col[0] = light->color[0];
 	col[1] = light->color[1];
 	col[2] = light->color[2];
-	glUniformMatrix4fv(sPos, 1, GL_FALSE, &_matrix[0][0]);
-	//glBindTexture(GL_TEXTURE1, reduce);
-	//glUniform1i(reduce, GL_TEXTURE1);
+	glUniformMatrix4fv(sPos, 1, GL_FALSE, &matrix[0][0]);
 	glUniform1i(reduce, 1);
 	glUniform1i(renderTargetSize, light->radius * 2.f);
 	glUniform4fv(lightColor, 1, col);
 	TextureManager::ClearTexture(light->shadowFBO);
 	Draw(light->shadowFBO, light, info[0].second);
 	shadowShader.unuse();
-	//// Applique le blur shader
-	////mShaderStates.shader = &blurHShader;
-	//blurHShader.use();
-	//Draw(info[3].first, light, light->shadowTex);
-	////light->textures->blurTex.draw(light->shadowSprite, mShaderStates);
-	////light->textures->blurTex.display();
-	//blurHShader.unuse();
-	////mShaderStates.shader = &blurVShader;
-	//blurVShader.use();
-	//Draw(light->shadowFBO, light, info[3].second);
-	////light->shadowTex.draw(light->textures->blurSprite, mShaderStates);
-	////light->shadowTex.display();
-	//blurVShader.unuse();
 
+
+	blurHShader.use();
+	glUniformMatrix4fv(bhPos, 1, GL_FALSE, &matrix[0][0]);
+	TextureManager::ClearTexture(info[3].first);
+	Draw(info[3].first, light, light->shadowTex);
+	blurHShader.unuse();
+
+	blurVShader.use();
+	glUniformMatrix4fv(bvPos, 1, GL_FALSE, &matrix[0][0]);
+	TextureManager::ClearTexture(light->shadowFBO);
+	Draw(light->shadowFBO, light, info[3].second);
+	blurVShader.unuse();
 	//TextureManager::ClearTexture(info[0].first);
-	//glViewport(0, 0, 750, 750);
-	// Efface la casterTexture
-	//light->textures->casterTex.clear(sf::Color::Transparent);
 }
 
 void LightEngine::UpdateMatrix(glm::mat4 mat) {
