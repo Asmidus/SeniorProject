@@ -1,4 +1,5 @@
 #pragma once
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -32,6 +33,8 @@ public:
 	float getScale() const { return _scale; }
 	const glm::mat4& getCameraMatrix() const { return _cameraMatrix; }
 	float getAspectRatio() const { return (float)_screenWidth / (float)_screenHeight; }
+
+	void view() { glViewport(0, 0, _screenWidth, _screenHeight); }
 
 private:
 	int _screenWidth, _screenHeight;

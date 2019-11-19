@@ -21,7 +21,7 @@ entt::entity AssetManager::createPlayer() {
 	static unsigned int shipSize = 30;
 	std::unordered_map<unsigned int, std::function<bool(bool)>> keyMap;
 	std::unordered_map<Event::Type, float> cooldowns;
-	cooldowns[Event::Type::shootBullet] = 0.75f;
+	cooldowns[Event::Type::shootBullet] = 0.5f;
 	//cooldowns[Event::Type::collision] = 1.5f;
 	Velocity* vel = &(_registry->assign<Velocity>(entity, glm::vec2(1, 0), 3, 3));
 	_registry->assign<Sprite>(entity, "media/ECSplayer.png", 50, 50);
@@ -76,7 +76,7 @@ entt::entity AssetManager::createPlayer() {
 entt::entity AssetManager::createBullet(const entt::entity& shooter) {
 	auto entity = _registry->create();
 	auto& shooterTransform = _registry->get<Transform>(shooter);
-	static unsigned int bulletSize = 12.5;
+	static float bulletSize = 1;
 	glm::vec2 point = glm::vec2(shooterTransform.rect.w, shooterTransform.rect.h/2);
 	float angle = shooterTransform.angle;
 	auto center = shooterTransform.center * glm::vec2(shooterTransform.rect.w, shooterTransform.rect.h);
@@ -87,7 +87,11 @@ entt::entity AssetManager::createBullet(const entt::entity& shooter) {
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50, glm::vec3(0, 255, 0));
 	//_registry->assign<Lifetime>(entity, 3);
 	_registry->assign<Collider>(entity, bulletSize/2);
-	_registry->assign<Light>(entity, glm::vec3(0, 1, 0), 1000/2.0f);
+	//float size = 1000 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (2000 - 1000.0f)));
+	float r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));
+	float g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));
+	float b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));
+	_registry->assign<Light>(entity, glm::vec3(r, g, b), 1024/2.0f);
 	_registry->assign<entt::tag<"Player"_hs>>(entity);
 	return entity;
 }

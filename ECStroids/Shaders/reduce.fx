@@ -45,13 +45,8 @@ vec2 Reduce(vec2 TexCoord)
 
 void main()
 {
-	//gl_FragColor = texture(samp, fragmentUV);
-	vec2 relativeUV = fragmentUV  * vec2(renderTargetSize/2, 1);
-	//if (relativeUV.x < 0.5) {
+	vec2 relativeUV = fragmentUV * vec2(renderTargetSize/2.0, 1);
 	color = vec4(Reduce(vec2(relativeUV.x, fragmentUV.y)), 0, 1);
-	//} else {
-	//	color = vec4(0, 0, 1, 1);
-	//}
 }
 
 /*void main()

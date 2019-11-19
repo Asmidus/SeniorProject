@@ -19,31 +19,28 @@
 
 void Systems::drawSprites(SpriteBatch* batch) {
 	updateAnimations();
-	if (!_lightEngine) {
-		_lightEngine = new LightEngine();
-	}
-	_lightEngine->UpdateMatrix(_camera->getCameraMatrix());
+	//if (!_lightEngine) {
+	//	_lightEngine = new LightEngine();
+	//}
+	//_lightEngine->UpdateMatrix(_camera->getCameraMatrix());
 	for (auto& entity : _registry->group<Light>(entt::get<Transform>)) {
 		auto [light, transform] = _registry->get<Light, Transform>(entity);
-		//_camera->setPosition(glm::vec2(transform.rect.x + transform.rect.w / 2, transform.rect.y + transform.rect.h / 2));
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		_program->unuse();
-		_lightEngine->Begin(light, transform);
+		_lightEngine.Begin(light, transform);
 		for (auto& entity : _registry->view<entt::tag<"Occluder"_hs>>()) {
 			auto [sprite, pt] = _registry->get<Sprite, Transform>(entity);
-			_lightEngine->DrawHull(&light, &transform, &sprite, &pt);
+			_lightEngine.DrawHull(&light, &transform, &sprite, &pt);
 		}
-		_lightEngine->End();
-		//glViewport(0, 0, 750, 750);
-		auto vec = TextureManager::GetRenderTextures(light.radius * 2);
-		_lightEngine->CreateShadows(&light);
+		_lightEngine.End();
+		_lightEngine.CreateShadows(&light);
+		_camera->view();
 		_program->use();
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-		//_lightEngine->Draw(&light, &transform);
+		_lightEngine.Draw(&light, &transform);
+		//auto vec = TextureManager::GetRenderTextures(light.radius * 2);
 		//TextureManager::DrawTexture(std::get<0>(TextureManager::LoadTexture("media/Button.png")));
 		//TextureManager::DrawTexture(light.shadowTex);
-		TextureManager::DrawTexture(vec[0].second);
-		TextureManager::ClearTexture(vec[0].first);
+		//TextureManager::DrawTexture(vec[3].second);
+		//TextureManager::ClearTexture(vec[0].first);
 	}
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	batch->begin(GlyphSortType::BACK_TO_FRONT);

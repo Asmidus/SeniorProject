@@ -41,7 +41,7 @@ std::tuple<unsigned int, unsigned int, unsigned int> TextureManager::LoadTexture
 	return _textures[fileName];
 }
 
-std::pair<GLuint, GLuint> TextureManager::CreateRenderTexture(int width, int height) {
+std::pair<GLuint, GLuint> TextureManager::CreateRenderTexture(int width, int height, bool smooth) {
 	GLuint texture;
 	//Generate the openGL texture object
 	glGenTextures(1, &(texture));
@@ -52,13 +52,13 @@ std::pair<GLuint, GLuint> TextureManager::CreateRenderTexture(int width, int hei
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
 	//Set some texture parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-	//Generate the mip maps
-	glGenerateMipmap(GL_TEXTURE_2D);
+	if (smooth) {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	} else {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	}
 
 	//Unbind the texture
 	GLuint fbo;
@@ -84,8 +84,8 @@ void TextureManager::DrawTexture(GLuint texture) {
 	glGenBuffers(1, &_vboID);
 	unsigned int x = 0;
 	unsigned int y = 0;
-	unsigned int width = 750;
-	unsigned int height = 750;
+	unsigned int width = 500;
+	unsigned int height = 500;
 
 	//This array will hold our vertex data.
 	//We need 6 vertices, and each vertex has 2

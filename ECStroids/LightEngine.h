@@ -5,16 +5,17 @@
 #include <memory>
 #include <list>
 #include <map>
+#include <vector>
 
 class Light;
 class Sprite;
 class Transform;
 class LightEngine {
 public:
-	LightEngine(void);
-	virtual ~LightEngine(void);
+	LightEngine();
+	virtual ~LightEngine();
 
-	void LoadShaders(void);
+	void LoadShaders();
 	void Begin(const Light& light, const Transform& transform);
 	void End();
 	void DrawHull(Light* light, Transform* lightTransform, Sprite* sprite, Transform* transform);

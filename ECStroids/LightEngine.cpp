@@ -10,7 +10,6 @@
 
 LightEngine::LightEngine(void) {
 	_vbo = 0;
-	LoadShaders();
 }
 
 LightEngine::~LightEngine(void) {}
@@ -85,12 +84,15 @@ void LightEngine::Begin(const Light& light,  const Transform& transform) {
 	_camera.init(size, size);
 	//_camera.setPosition(0, 0);
 	//_camera.setScale(size/750);
+	_camera.setScale(1/transform.rect.w);
 	_camera.setPosition(glm::vec2(transform.rect.x + transform.rect.w / 2, size - transform.rect.y - transform.rect.h / 2));
 	//_camera.setPosition(glm::vec2(size / 2.0, size / 2.0));
 	//_camera.setPosition(glm::vec2( -transform.rect.x - transform.rect.w / 2 + size / 2, -transform.rect.y - transform.rect.h / 2 + size / 2));
 	_camera.update();
+	_camera.view();
 	auto& matrix = _camera.getCameraMatrix();
 	glUniformMatrix4fv(hPos, 1, GL_FALSE, &matrix[0][0]);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glViewport(-transform.rect.x - transform.rect.w / 2 + size / 2, -transform.rect.y - transform.rect.h / 2 + size / 2, size, size);
 	auto info = TextureManager::GetRenderTextures(size);
 	glBindFramebuffer(GL_FRAMEBUFFER, info[0].first);
@@ -204,7 +206,6 @@ void LightEngine::DrawHull(Light* light, Transform* lightTransform, Sprite* spri
 
 	//Unbind the VBO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void LightEngine::Draw(GLuint& fbo, Light* light, GLuint texture) {
@@ -226,7 +227,7 @@ void LightEngine::Draw(GLuint& fbo, Light* light, GLuint texture) {
 		size = 100;
 		width = size, height = size;
 	}
-	vertexData[0].pos = glm::vec2(x + width, y + height);
+	vertexData[0].setPosition(x + width, y + height);
 	vertexData[0].setUV(1.0f, 0.0f);
 
 	vertexData[1].setPosition(x, y + height);
@@ -287,8 +288,8 @@ void LightEngine::Draw(Light* light, Transform* lightTransform) {
 //floats for X and Y
 	static Vertex vertexData[6];
 	int size = light->radius * 2;
-	int width = size, height = size;
-	int x = lightTransform->rect.x + lightTransform->rect.w/2 - size / 2, y = lightTransform->rect.y + lightTransform->rect.h/2 - size / 2;
+	int width = size * lightTransform->rect.w, height = size * lightTransform->rect.h;
+	int x = lightTransform->rect.x + lightTransform->rect.w/2 - width / 2, y = lightTransform->rect.y + lightTransform->rect.h/2 - height / 2;
 	//First Triangle
 	vertexData[0].pos = glm::vec2(x + width, y + height);
 	vertexData[0].setUV(1.0f, 1.0f);
@@ -308,6 +309,7 @@ void LightEngine::Draw(Light* light, Transform* lightTransform) {
 
 	vertexData[5].setPosition(x + width, y + height);
 	vertexData[5].setUV(1.0f, 1.0f);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	//Tell opengl to bind our vertex buffer object
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 	//Upload the data to the GPU
@@ -340,6 +342,10 @@ void LightEngine::Draw(Light* light, Transform* lightTransform) {
 }
 
 void LightEngine::CreateShadows(Light* light) {
+	//_camera.setPosition(_camera.getPosition() + glm::vec2(610, -625));
+	_camera.setScale(1.0f);
+	_camera.setPosition(glm::vec2(light->radius, light->radius));
+	_camera.update();
 	auto info = TextureManager::GetRenderTextures(light->radius * 2);
 	auto& matrix = _camera.getCameraMatrix();
 	distortShader.use();
@@ -362,7 +368,7 @@ void LightEngine::CreateShadows(Light* light) {
 	glActiveTexture(GL_TEXTURE0 + 1); // Texture unit 1
 	glBindTexture(GL_TEXTURE_2D, info[2].second);
 	glActiveTexture(GL_TEXTURE0);
-	static GLfloat col[4] = { 0, 0, 1, 1 };
+	static GLfloat col[4] = { 0, 0, 0, 1 };
 	col[0] = light->color[0];
 	col[1] = light->color[1];
 	col[2] = light->color[2];
@@ -374,7 +380,7 @@ void LightEngine::CreateShadows(Light* light) {
 	Draw(light->shadowFBO, light, info[0].second);
 	shadowShader.unuse();
 
-
+	glBlendFunc(GL_ONE, GL_ONE);
 	blurHShader.use();
 	glUniformMatrix4fv(bhPos, 1, GL_FALSE, &matrix[0][0]);
 	TextureManager::ClearTexture(info[3].first);
@@ -386,7 +392,7 @@ void LightEngine::CreateShadows(Light* light) {
 	TextureManager::ClearTexture(light->shadowFBO);
 	Draw(light->shadowFBO, light, info[3].second);
 	blurVShader.unuse();
-	//TextureManager::ClearTexture(info[0].first);
+	TextureManager::ClearTexture(info[0].first);
 }
 
 void LightEngine::UpdateMatrix(glm::mat4 mat) {

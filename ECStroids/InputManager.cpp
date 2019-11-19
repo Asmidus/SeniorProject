@@ -13,20 +13,9 @@ void InputManager::pressKey(unsigned int keyID) {
 	}
 }
 
-void InputManager::pressButton(unsigned int buttonID) {
-	if (std::find(_pressedMouseButtons.begin(), _pressedMouseButtons.end(), buttonID) == _pressedMouseButtons.end()) {
-		_pressedMouseButtons.push_back(buttonID);
-	}
-}
-
 void InputManager::releaseKey(unsigned int keyID) {
 	_pressedKeys.remove(keyID);
 	_releasedKeys.push_back(keyID);
-}
-
-void InputManager::releaseButton(unsigned int buttonID) {
-	_pressedMouseButtons.remove(buttonID);
-	_releasedMouseButtons.push_back(buttonID);
 }
 
 void InputManager::setMouseCoords(float x, float y) {
