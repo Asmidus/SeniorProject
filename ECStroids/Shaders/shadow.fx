@@ -9,6 +9,7 @@ in vec2 fragmentUV;
 out vec4 color;
 
 uniform sampler2D reduce;
+uniform sampler2D samp;
 uniform float renderTargetSize;
 uniform vec4 lightColor;
 
@@ -72,6 +73,18 @@ void main()
 		shadowMapDistance = GetShadowDistanceH(vec2(fragmentUV.x, fragmentUV.y + 0.00001));
 	}
 
+	//float light = 1;
+	//vec4 texCol = texture(samp, fragmentUV);
+	//if (dist > shadowMapDistance) {
+	//	float test = abs(dist - shadowMapDistance);
+	//	if (test < 0.025) {
+	//		texCol.a = 1;
+	//	} else {
+	//		texCol.rgb = vec3(0, 0, 0);
+	//	}
+	//	light = 0;
+	//}
+	//vec4 result = vec4(light + texCol.r, light + texCol.g, light + texCol.b, 1);
 	// If distance to this pixel is lower than distance from shadowMap,
 	// then we are not in shadow
 	float light = dist <= shadowMapDistance ? 1.0 : 0.0;

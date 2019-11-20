@@ -19,14 +19,12 @@
 
 void Systems::drawSprites(SpriteBatch* batch) {
 	updateAnimations();
-	//if (!_lightEngine) {
-	//	_lightEngine = new LightEngine();
-	//}
-	//_lightEngine->UpdateMatrix(_camera->getCameraMatrix());
 	for (auto& entity : _registry->group<Light>(entt::get<Transform>)) {
 		auto [light, transform] = _registry->get<Light, Transform>(entity);
 		_program->unuse();
 		_lightEngine.Begin(light, transform);
+		//TODO draw occluders ONCE and then translate the image for each light so we only draw occluders twice as opposed to
+		//once per light and once again in the loop below  (this assumes a constant shadow resolution across light sizes)
 		for (auto& entity : _registry->view<entt::tag<"Occluder"_hs>>()) {
 			auto [sprite, pt] = _registry->get<Sprite, Transform>(entity);
 			_lightEngine.DrawHull(&light, &transform, &sprite, &pt);
@@ -36,13 +34,8 @@ void Systems::drawSprites(SpriteBatch* batch) {
 		_camera->view();
 		_program->use();
 		_lightEngine.Draw(&light, &transform);
-		//auto vec = TextureManager::GetRenderTextures(light.radius * 2);
-		//TextureManager::DrawTexture(std::get<0>(TextureManager::LoadTexture("media/Button.png")));
-		//TextureManager::DrawTexture(light.shadowTex);
-		//TextureManager::DrawTexture(vec[3].second);
-		//TextureManager::ClearTexture(vec[0].first);
 	}
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
 	batch->begin(GlyphSortType::BACK_TO_FRONT);
 	_registry->group<Sprite, Transform>().each([batch](auto entity, auto& sprite, auto& transform) {
 		//TextureManager::Draw(sprite.texture, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);

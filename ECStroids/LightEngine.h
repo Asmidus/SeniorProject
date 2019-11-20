@@ -1,6 +1,7 @@
 #pragma once
 #include "Program.h"
 #include "Camera.h"
+#include "SpriteBatch.h"
 #include <gl/glew.h>
 #include <memory>
 #include <list>
@@ -34,6 +35,7 @@ public:
 	Program blurVShader;
 	Program blurHShader;
 	Camera _camera;
+	SpriteBatch _batch;
 
 	GLuint hPos;
 	GLuint dPos;
