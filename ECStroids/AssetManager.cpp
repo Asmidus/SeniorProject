@@ -36,18 +36,19 @@ entt::entity AssetManager::createPlayer() {
 	_registry->assign<Collider>(entity, shipSize/2.25);
 	_registry->assign<entt::tag<"Player"_hs>>(entity);
 	_registry->assign<entt::tag<"Occluder"_hs>>(entity);
+	_registry->assign<entt::tag<"Bright"_hs>>(entity);
 	keyMap[SDLK_w] = [entity](bool pressed) {
 		auto& velocity = _registry->get<Velocity>(entity);
 		auto& animation = _registry->get<Animation>(entity);
 		if (pressed) {
 			velocity.currAccel = velocity.accel;
 			animation.active = true;
-			//_registry->assign<Light>(entity, glm::vec2(0.1, 0.5), glm::vec3(1, 0.64, 0), 50.0f);
+			_registry->assign<Light>(entity, glm::vec2(-0.025, 0.5), glm::vec3(1, 0.64, 0), 0.25f);
 		}
 		else {
 			velocity.currAccel = 0;
 			animation.active = false;
-			//_registry->remove<Light>(entity);
+			_registry->remove<Light>(entity);
 		}
 		return false;
 	};
@@ -76,13 +77,13 @@ entt::entity AssetManager::createPlayer() {
 entt::entity AssetManager::createBullet(const entt::entity& shooter) {
 	auto entity = _registry->create();
 	auto& shooterTransform = _registry->get<Transform>(shooter);
-	static float bulletSize = 1.5;
+	static float bulletSize = 12.5;
 	glm::vec2 point = glm::vec2(shooterTransform.rect.w, shooterTransform.rect.h/2);
 	float angle = shooterTransform.angle;
 	auto center = shooterTransform.center * glm::vec2(shooterTransform.rect.w, shooterTransform.rect.h);
 	float rotatedX = cos(angle) * (point.x - center.x) - sin(angle) * (point.y - center.y) + center.x + shooterTransform.rect.x - bulletSize/2;
 	float rotatedY = sin(angle) * (point.x - center.x) + cos(angle) * (point.y - center.y) + center.y + shooterTransform.rect.y - bulletSize/2;
-	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 3.0f);
+	_registry->assign<Velocity>(entity, _registry->get<Velocity>(shooter).direction, 0.0f);
 	_registry->assign<Transform>(entity, rotatedX, rotatedY, bulletSize, bulletSize, 1);
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50, glm::vec3(0, 255, 0));
 	//_registry->assign<Lifetime>(entity, 3);
@@ -91,7 +92,7 @@ entt::entity AssetManager::createBullet(const entt::entity& shooter) {
 	float r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));
 	float g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));
 	float b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX));
-	_registry->assign<Light>(entity, glm::vec3(255, 255, 255), 512/2.0f);
+	_registry->assign<Light>(entity, glm::vec3(255, 255, 255), 2.0f);
 	_registry->assign<entt::tag<"Player"_hs>>(entity);
 	return entity;
 }
@@ -141,7 +142,7 @@ entt::entity AssetManager::createAsteroid(entt::entity* parentAsteroid) {
 	_registry->assign<Collider>(entity, _registry->get<Collider>(*parentAsteroid).radius/2);
 	_registry->assign<Sprite>(entity, "media/Projectile.png", 50, 50, glm::vec3(150, 75, 0));
 	_registry->assign<entt::tag<"Enemy"_hs>>(entity);
-	_registry->assign<entt::tag<"Occluder"_hs>>(entity);
+	//_registry->assign<entt::tag<"Occluder"_hs>>(entity);
 	return entity;
 }
 
@@ -152,6 +153,7 @@ entt::entity AssetManager::createButton(Event::Type type, const char* text) {
 	_registry->assign<Sprite>(entity, "media/Button.png", 160, 100, glm::vec3(255, 100, 100));
 	_registry->assign<Transform>(entity, 0, 0, 160, 100, 0);
 	_registry->assign<MouseListener>(entity, mouseMap);
+	_registry->assign<entt::tag<"Bright"_hs>>(entity);
 	//_registry->assign<Text>(entity, text, 160, 100, 24, SDL_Color({ 25, 25, 25, 255 }));
 	return entity;
 }

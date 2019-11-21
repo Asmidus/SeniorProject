@@ -61,11 +61,19 @@ void LightEngine::LoadShaders(void) {
 }
 
 void LightEngine::Begin(const Light& light,  const Transform& transform) {
-	unsigned int size = light.radius * 2;
+	unsigned int size = light.resolution;
 	hullShader.use();
 	_camera.init(size, size);
-	_camera.setScale(1/transform.rect.w);
-	_camera.setPosition(glm::vec2(transform.rect.x + transform.rect.w / 2, size - transform.rect.y - transform.rect.h / 2));
+	_camera.setScale(1/light.radius);
+	float x = transform.rect.x + transform.rect.w * light.pos.x,
+		y = transform.rect.y + transform.rect.h * light.pos.y;
+	glm::vec2 point = glm::vec2(x, y);
+	float angle = transform.angle;
+	auto center = transform.center * glm::vec2(transform.rect.w, transform.rect.h) + glm::vec2(transform.rect.x, transform.rect.y);
+	x = cos(angle) * (point.x - center.x) - sin(angle) * (point.y - center.y) + center.x;
+	y = sin(angle) * (point.x - center.x) + cos(angle) * (point.y - center.y) + center.y;
+	_camera.setPosition(glm::vec2(x,
+								  size - y));
 	_camera.update();
 	_camera.view();
 	auto& matrix = _camera.getCameraMatrix();
@@ -91,7 +99,7 @@ glm::vec2 rotatePoint(const glm::vec2& pos, float angle) {
 }
 
 void LightEngine::DrawHull(Light* light, Transform* lightTransform, Sprite* sprite, Transform* transform) {
-	glm::vec4 t = glm::vec4(transform->rect.x, light->radius * 2 - transform->rect.y - transform->rect.h, transform->rect.w, transform->rect.h);
+	glm::vec4 t = glm::vec4(transform->rect.x, light->resolution - transform->rect.y - transform->rect.h, transform->rect.w, transform->rect.h);
 	glm::vec4 u = sprite->getUV();
 	if (transform->angle) {
 		_batch.draw(t, u, sprite->texture, transform->z, sprite->color, -transform->angle, transform->center);
@@ -105,7 +113,7 @@ void LightEngine::Draw(GLuint& fbo, Light* light, GLuint texture) {
 		glGenBuffers(1, &_vbo);
 	}
 	static Vertex vertexData[6];
-	int size = light->radius * 2;
+	int size = light->resolution;
 	int width = size, height = size;
 	int x = 0, y = 0;
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -143,20 +151,26 @@ void LightEngine::Draw(Light* light, Transform* lightTransform) {
 		glGenBuffers(1, &_vbo);
 	}
 	static Vertex vertexData[6];
-	int size = light->radius * 2;
-	int width = size * lightTransform->rect.w, height = size * lightTransform->rect.h;
-	int x = lightTransform->rect.x + lightTransform->rect.w/2 - width / 2, y = lightTransform->rect.y + lightTransform->rect.h/2 - height / 2;
-	vertexData[0].pos = glm::vec2(x + width, y + height);
+	int size = light->resolution;
+	int dim = size * light->radius;
+	int x = lightTransform->rect.x + lightTransform->rect.w * light->pos.x,
+		y = lightTransform->rect.y + lightTransform->rect.h * light->pos.y;
+	glm::vec2 point = glm::vec2(x, y);
+	float angle = lightTransform->angle;
+	auto center = lightTransform->center * glm::vec2(lightTransform->rect.w, lightTransform->rect.h) + glm::vec2(lightTransform->rect.x, lightTransform->rect.y);
+	x = cos(angle) * (point.x - center.x) - sin(angle) * (point.y - center.y) + center.x - dim / 2;
+	y = sin(angle) * (point.x - center.x) + cos(angle) * (point.y - center.y) + center.y - dim / 2;
+	vertexData[0].setPosition(x + dim, y + dim);
 	vertexData[0].setUV(1.0f, 1.0f);
-	vertexData[1].setPosition(x, y + height);
+	vertexData[1].setPosition(x, y + dim);
 	vertexData[1].setUV(0.0f, 1.0f);
 	vertexData[2].setPosition(x, y);
 	vertexData[2].setUV(0.0f, 0.0f);
 	vertexData[3].setPosition(x, y);
 	vertexData[3].setUV(0.0f, 0.0f);
-	vertexData[4].setPosition(x + width, y);
+	vertexData[4].setPosition(x + dim, y);
 	vertexData[4].setUV(1.0f, 0.0f);
-	vertexData[5].setPosition(x + width, y + height);
+	vertexData[5].setPosition(x + dim, y + dim);
 	vertexData[5].setUV(1.0f, 1.0f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glBindBuffer(GL_ARRAY_BUFFER, _vbo);
@@ -177,9 +191,9 @@ void LightEngine::Draw(Light* light, Transform* lightTransform) {
 
 void LightEngine::CreateShadows(Light* light) {
 	_camera.setScale(1.0f);
-	_camera.setPosition(glm::vec2(light->radius, light->radius));
+	_camera.setPosition(glm::vec2(light->resolution / 2, light->resolution / 2));
 	_camera.update();
-	auto info = TextureManager::GetRenderTextures(light->radius * 2);
+	auto info = TextureManager::GetRenderTextures(light->resolution);
 	auto& matrix = _camera.getCameraMatrix();
 
 	distortShader.use();
@@ -190,7 +204,7 @@ void LightEngine::CreateShadows(Light* light) {
 	reduceShader.use();
 	static GLuint reduceRenderTargetSize = reduceShader.getUniformLocation("renderTargetSize");
 	glUniformMatrix4fv(rPos, 1, GL_FALSE, &matrix[0][0]);
-	glUniform1f(reduceRenderTargetSize, light->radius * 2.0f);
+	glUniform1f(reduceRenderTargetSize, light->resolution);
 	Draw(info[2].first, light, info[1].second);
 	reduceShader.unuse();
 
@@ -207,7 +221,7 @@ void LightEngine::CreateShadows(Light* light) {
 	col[2] = light->color[2];
 	glUniformMatrix4fv(sPos, 1, GL_FALSE, &matrix[0][0]);
 	glUniform1i(reduce, 1);
-	glUniform1i(renderTargetSize, light->radius * 2.f);
+	glUniform1i(renderTargetSize, light->resolution);
 	glUniform4fv(lightColor, 1, col);
 	TextureManager::ClearTexture(light->shadowFBO);
 	Draw(light->shadowFBO, light, info[0].second);
@@ -228,8 +242,4 @@ void LightEngine::CreateShadows(Light* light) {
 	blurVShader.unuse();
 
 	TextureManager::ClearTexture(info[0].first);
-}
-
-void LightEngine::UpdateMatrix(glm::mat4 mat) {
-	_matrix = mat;
 }

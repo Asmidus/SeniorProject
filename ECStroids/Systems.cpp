@@ -19,6 +19,7 @@
 
 void Systems::drawSprites(SpriteBatch* batch) {
 	updateAnimations();
+	//render lights
 	for (auto& entity : _registry->group<Light>(entt::get<Transform>)) {
 		auto [light, transform] = _registry->get<Light, Transform>(entity);
 		_program->unuse();
@@ -37,7 +38,27 @@ void Systems::drawSprites(SpriteBatch* batch) {
 	}
 	glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);
 	batch->begin(GlyphSortType::BACK_TO_FRONT);
-	_registry->group<Sprite, Transform>().each([batch](auto entity, auto& sprite, auto& transform) {
+	_registry->group<Sprite>(entt::get<Transform>, entt::exclude<entt::tag<"Bright"_hs>>).each([batch](auto entity, auto& sprite, auto& transform) {
+		//TextureManager::Draw(sprite.texture, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);
+		glm::vec4 t = glm::vec4(transform.rect.x, transform.rect.y, transform.rect.w, transform.rect.h);
+		glm::vec4 u = sprite.getUV();
+		if (transform.angle) {
+			batch->draw(t, u, sprite.texture, transform.z, sprite.color, transform.angle, transform.center);
+		} else {
+			batch->draw(t, u, sprite.texture, transform.z, sprite.color);
+		}
+		//auto text = _registry->try_get<Text>(entity);
+		//if (text) {
+		//	text->dest.x = transform.rect.x + text->offset.x;
+		//	text->dest.y = transform.rect.y + text->offset.y;
+		//	TextureManager::DrawText(text->texture, text->dest);
+		//}
+	});
+	batch->end();
+	batch->renderBatch();
+	glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+	batch->begin(GlyphSortType::BACK_TO_FRONT);
+	_registry->group<>(entt::get<Sprite, Transform, entt::tag<"Bright"_hs>>).each([batch](auto entity, auto& sprite, auto& transform, auto tag) {
 		//TextureManager::Draw(sprite.texture, sprite.src, transform.rect, &transform.center, transform.angle, sprite.color);
 		glm::vec4 t = glm::vec4(transform.rect.x, transform.rect.y, transform.rect.w, transform.rect.h);
 		glm::vec4 u = sprite.getUV();
@@ -82,9 +103,9 @@ void Systems::updateAnimations() {
 }
 
 void Systems::moveEntities() {
-	auto group = _registry->group<Sprite, Transform, Velocity>();
+	auto group = _registry->group<Transform, Velocity>();
 	std::for_each(std::execution::par_unseq, group.begin(), group.end(), [=](auto entity) {
-		auto [sprite, transform, velocity] = group.get<Sprite, Transform, Velocity>(entity);
+		auto [transform, velocity] = group.get<Transform, Velocity>(entity);
 		if (!velocity.constant) {
 			glm::vec2 deltaVel = glm::vec2(0, 0);
 			//if the entity is trying to accelerate in its given direction, apply that acceleration
