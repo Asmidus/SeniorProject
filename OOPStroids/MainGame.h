@@ -4,8 +4,8 @@
 #include <GL/glew.h>
 #include <vector>
 //#include "InputManager.h"
-//#include "Timing.h"
-//#include "Window.h"
+#include "Timing.h"
+#include "Window.h"
 
 #include <list>
 //#include "AssetManager.h"
@@ -31,13 +31,13 @@ private:
 	void gameLoop();
 	void processInput();
 	void drawGame();
-	//Window _window;
+	Window _window;
 	SDL_Renderer* _renderer;
 	unsigned int _screenWidth;
 	unsigned int _screenHeight;
 	GameState _gameState;
 	//InputManager _inputManager;
-	//FPSLimiter _fpsLimiter;
+	FPSLimiter _fpsLimiter;
 	//entt::registry _registry;
 	//EventManager _events;
 	//Systems _systems;
