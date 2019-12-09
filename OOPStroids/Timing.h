@@ -1,6 +1,5 @@
 //OOPstroids
 
-
 #pragma once
 #include <chrono>
 class FPSLimiter {

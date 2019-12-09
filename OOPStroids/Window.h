@@ -3,7 +3,6 @@
 #include <GL/glew.h>
 #include <string>
 
-
 enum WindowFlags {
 	INVISIBLE = 0x1,
 	FULLSCREEN = 0x2,
