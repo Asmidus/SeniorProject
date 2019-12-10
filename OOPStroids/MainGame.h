@@ -3,7 +3,7 @@
 #include <SDL/SDL.h>
 #include <GL/glew.h>
 #include <vector>
-//#include "InputManager.h"
+#include "InputManager.h"
 #include "Timing.h"
 #include "Window.h"
 
@@ -29,6 +29,7 @@ private:
 	void initSystems();
 	void initLevel();
 	void gameLoop();
+	void wrapping(float a, float b, float& fa, float& fb);
 	void processInput();
 	void drawGame();
 	Window _window;
@@ -36,7 +37,7 @@ private:
 	unsigned int _screenWidth;
 	unsigned int _screenHeight;
 	GameState _gameState;
-	//InputManager _inputManager;
+	InputManager _inputManager;
 	FPSLimiter _fpsLimiter;
 	//entt::registry _registry;
 	//EventManager _events;
